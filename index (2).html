@@ -1,0 +1,955 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Heartbeat v0.1 — an interactive, auditable options research and paper-trading simulation.">
+  <title>Heartbeat — The Umbrella Institute</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23070a0f'/%3E%3Cpath d='M8 34h12l5-13 9 27 7-20 4 6h11' fill='none' stroke='%2367f5b8' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+  <style>
+    :root{--bg:#06090e;--panel:#0b1018;--panel2:#0f1722;--line:#1d2937;--text:#ecf4f1;--muted:#81909e;--green:#67f5b8;--cyan:#6bdcff;--amber:#f2c567;--red:#ff6f7d;--violet:#ae8cff;--radius:18px}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 45% -20%,#12263a 0,transparent 38%),var(--bg);color:var(--text);font:15px/1.45 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;min-height:100vh} button,input,select{font:inherit} button{cursor:pointer}
+    .shell{max-width:1500px;margin:auto;padding:22px}.topbar{display:flex;align-items:center;gap:14px;margin-bottom:18px}.brand{font-weight:800;letter-spacing:.14em}.version{font:12px ui-monospace,monospace;color:var(--green);border:1px solid #24553f;border-radius:20px;padding:4px 8px}.paper{margin-left:auto;color:var(--amber);font-size:13px}.live-dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--amber);box-shadow:0 0 10px var(--amber);margin-right:7px}.grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px}.panel{background:linear-gradient(145deg,rgba(15,23,34,.94),rgba(8,13,20,.98));border:1px solid var(--line);border-radius:var(--radius);box-shadow:0 22px 80px rgba(0,0,0,.25)}
+    .hero{padding:22px;min-height:330px;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 49.8%,rgba(103,245,184,.04) 50%,transparent 50.2%);background-size:70px 100%;pointer-events:none}.eyebrow{color:var(--muted);font:12px ui-monospace,monospace;letter-spacing:.14em}.hero h1{font-size:clamp(30px,5vw,68px);line-height:.95;letter-spacing:-.05em;margin:18px 0 14px;max-width:780px}.hero h1 span{color:var(--green)}.sub{color:#9aabb6;max-width:660px;font-size:16px}.controls{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-top:24px;position:relative;z-index:2}.primary{background:var(--green);color:#04110b;border:0;border-radius:12px;padding:12px 18px;font-weight:800}.secondary{background:transparent;color:var(--text);border:1px solid #304153;border-radius:12px;padding:11px 15px}.secondary:hover{border-color:var(--cyan)}.pulse-wrap{margin-top:34px;height:62px;position:relative}.pulse-line{width:100%;height:62px}.pulse-path{stroke:var(--green);filter:drop-shadow(0 0 7px rgba(103,245,184,.7));stroke-dasharray:800;stroke-dashoffset:0;animation:travel 2.2s linear infinite}.paused .pulse-path{animation-play-state:paused;opacity:.32}@keyframes travel{to{stroke-dashoffset:-800}}
+    .account{padding:20px}.account-head,.panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.label{color:var(--muted);font-size:13px}.big{font:700 42px/1 ui-monospace,monospace;margin:13px 0 20px}.mode{color:var(--green);font:12px ui-monospace,monospace}.metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.metric{padding:13px;border:1px solid var(--line);border-radius:12px;background:rgba(4,8,13,.35)}.metric b{display:block;font:700 20px ui-monospace,monospace;margin-top:4px}.tiny{font-size:12px;color:var(--muted)}
+    .agents{grid-column:1/-1;padding:18px}.agent-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:15px}.agent{min-height:150px;border:1px solid var(--line);border-radius:14px;padding:14px;position:relative;background:#090e15;transition:.25s}.agent.active{border-color:var(--agent);box-shadow:inset 0 0 0 1px var(--agent),0 0 32px color-mix(in srgb,var(--agent),transparent 82%);transform:translateY(-2px)}.agent .flag{font-size:20px}.agent h3{margin:8px 0 2px}.agent p{margin:0;color:var(--muted);font-size:12px}.agent .score{position:absolute;bottom:12px;left:14px;font:800 25px ui-monospace,monospace;color:var(--agent)}.agent .state{position:absolute;bottom:17px;right:12px;font:10px ui-monospace,monospace;color:var(--muted);text-transform:uppercase}.bar{height:4px;background:#17212c;border-radius:4px;overflow:hidden;margin-top:16px}.fill{height:100%;width:0;background:var(--agent);transition:width .5s ease}.agent.active .fill{animation:scan .9s ease-in-out infinite alternate}@keyframes scan{from{width:25%}to{width:93%}}
+    .feed{padding:18px;min-height:360px}.events{margin-top:12px;max-height:310px;overflow:auto}.event{display:grid;grid-template-columns:70px 88px 1fr;gap:9px;padding:10px 4px;border-bottom:1px solid #16212d;font-size:13px}.event time{color:#64788a;font:11px ui-monospace,monospace}.tag{font:700 10px ui-monospace,monospace;letter-spacing:.08em}.message{color:#b7c4cb}.ledger{padding:18px;overflow:hidden}.table-wrap{overflow:auto;margin-top:12px}table{width:100%;border-collapse:collapse;min-width:720px}th{text-align:left;color:var(--muted);font-size:11px;font-weight:600;padding:9px;border-bottom:1px solid var(--line)}td{padding:11px 9px;border-bottom:1px solid #16212d;font:13px ui-monospace,monospace}.status{font-size:10px;border-radius:12px;padding:4px 7px}.watch{color:var(--amber);background:#30260f}.reject{color:var(--red);background:#2b1116}.candidate{color:var(--green);background:#0c291d}
+    .settings{grid-column:1/-1;padding:18px}.settings-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}.control label{display:flex;justify-content:space-between;color:#adbac4;font-size:13px}.control input[type=range]{width:100%;accent-color:var(--green);margin-top:10px}.select{width:100%;background:#080d14;border:1px solid #263444;border-radius:10px;color:var(--text);padding:10px;margin-top:8px}.notice{grid-column:1/-1;color:#7d8c98;font-size:12px;padding:4px 5px}.flash{animation:flash .45s ease}@keyframes flash{50%{background:#14251f}}
+    .replay{grid-column:1/-1;padding:18px}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}.tab{border:1px solid #2a3949;color:#9fb0bd;background:#080d14;border-radius:20px;padding:8px 13px}.tab.active{color:#06120d;background:var(--green);border-color:var(--green);font-weight:800}.lab-grid{display:grid;grid-template-columns:1.05fr 1.4fr;gap:12px}.builder,.result-card{background:#080d14;border:1px solid var(--line);border-radius:14px;padding:15px}.builder-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}.builder .primary{width:100%;margin-top:14px}.result-card{position:relative;overflow:hidden}.result-card:before{content:"MODEL REPLAY";position:absolute;right:-25px;top:17px;transform:rotate(35deg);color:#577060;font:10px ui-monospace,monospace;border:1px solid #345642;padding:3px 28px}.result-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.pnl-number{font:800 38px ui-monospace,monospace;color:var(--green);margin:8px 0}.pnl-number.loss{color:var(--red)}.factor-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px;margin:14px 0}.factor{border:1px solid #1a2733;border-radius:9px;padding:8px}.factor span{display:block;color:var(--muted);font-size:10px}.factor b{font:12px ui-monospace,monospace}.explain{color:#aab8c1;font-size:13px;border-left:2px solid var(--violet);padding-left:11px}.replay-table{margin-top:14px}.source-badge{color:var(--amber);font:10px ui-monospace,monospace;border:1px solid #55451f;padding:4px 7px;border-radius:10px}.universe-list{font-size:12px;color:var(--muted);margin-top:8px}.positive{color:var(--green)}.negative{color:var(--red)}
+    .moonshot,.broker{grid-column:1/-1;padding:18px}.warning-strip{border:1px solid #57333a;background:#1f0e13;color:#ffc0c6;border-radius:12px;padding:12px 14px;margin:14px 0}.moon-grid{display:grid;grid-template-columns:.9fr 1.4fr;gap:12px}.reality-math{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:12px}.reality-math .metric b{font-size:18px}.sim-bars{display:grid;gap:10px;margin:15px 0}.sim-row{display:grid;grid-template-columns:150px 1fr 64px;gap:10px;align-items:center}.sim-track{height:9px;background:#18222d;border-radius:9px;overflow:hidden}.sim-fill{height:100%;border-radius:9px;transition:width .5s}.sim-row b{font:12px ui-monospace,monospace;text-align:right}.sample-paths{display:grid;grid-template-columns:repeat(5,1fr);gap:5px}.path{border:1px solid #1d2937;border-radius:9px;padding:8px;text-align:center}.path span{display:block;font:10px ui-monospace,monospace;color:var(--muted)}.path b{font:14px ui-monospace,monospace}.batch-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:12px}.batch{border:1px solid #1d2937;border-radius:9px;padding:8px}.batch span{display:block;color:var(--muted);font:9px ui-monospace,monospace}.batch b{font:12px ui-monospace,monospace}.range{width:100%;accent-color:var(--green);margin:10px 0}.ladder{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin-top:15px}.rung{border:1px solid var(--line);border-radius:12px;padding:12px;min-height:135px}.rung .num{font:10px ui-monospace,monospace;color:var(--muted)}.rung h3{font-size:14px;margin:8px 0 5px}.rung p{font-size:11px;color:var(--muted);margin:0}.rung.done{border-color:#285843;background:#0b1d16}.rung.now{border-color:var(--amber);box-shadow:inset 0 0 20px rgba(242,197,103,.06)}.gate{display:inline-block;margin-top:10px;font:9px ui-monospace,monospace;color:var(--red)}.done .gate{color:var(--green)}.broker-controls{display:flex;flex-wrap:wrap;gap:9px;margin-top:15px}.locked{opacity:.5;cursor:not-allowed}.source-links{font-size:12px;color:var(--muted);margin-top:12px}.source-links a{color:var(--cyan)}.policy-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:14px}.policy{border:1px solid var(--line);border-radius:10px;padding:10px;background:#080d14}.policy span{display:block;color:var(--muted);font-size:10px}.policy b{font:13px ui-monospace,monospace}.policy .off{color:var(--red)}.policy .on{color:var(--green)}
+    .validation{grid-column:1/-1;padding:18px}.validation-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:15px}.vcard{border:1px solid var(--line);border-radius:13px;padding:13px;background:#080d14;min-height:205px}.vcard h3{font-size:14px;margin:5px 0}.vcard p{font-size:11px;color:var(--muted);min-height:48px}.vstat{font:800 24px ui-monospace,monospace;margin:12px 0 4px}.vbar{height:6px;background:#17212c;border-radius:7px;overflow:hidden}.vbar span{display:block;height:100%;background:var(--amber);transition:width .4s}.vmeta{display:flex;justify-content:space-between;color:var(--muted);font:10px ui-monospace,monospace;margin-top:6px}.limit-form{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:15px}.limit-field{border:1px solid var(--line);border-radius:11px;padding:10px;background:#080d14}.limit-field label{display:block;color:var(--muted);font-size:11px}.limit-field input{width:100%;margin-top:6px;background:transparent;border:0;border-bottom:1px solid #334454;color:var(--text);font:700 18px ui-monospace,monospace;outline:none}.validation-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:12px}.checklist{margin-top:12px;border-top:1px solid var(--line)}.checkrow{display:grid;grid-template-columns:20px 1fr auto;gap:8px;padding:9px 3px;border-bottom:1px solid #16212d;font-size:12px}.checkmark{color:var(--red)}.checkrow.pass .checkmark,.checkrow.pass .checkstate{color:var(--green)}.checkstate{font:10px ui-monospace,monospace;color:var(--red)}
+    .oos{grid-column:1/-1;padding:18px}.oos-controls{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin:14px 0}.oos-windows{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.window{border:1px solid var(--line);border-radius:14px;padding:14px;background:#080d14}.window-head{display:flex;justify-content:space-between;align-items:center}.window h3{margin:6px 0 2px}.window-period{font:11px ui-monospace,monospace;color:var(--muted)}.window-metrics{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.wm{border:1px solid #1b2732;border-radius:8px;padding:8px}.wm span{display:block;color:var(--muted);font-size:9px}.wm b{font:12px ui-monospace,monospace}.failtext{color:var(--red)}.passtext{color:var(--green)}.import-row{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:13px}.filelabel{border:1px solid #304153;border-radius:12px;padding:10px 14px;cursor:pointer}.filelabel input{display:none}.schema{color:var(--muted);font:11px ui-monospace,monospace}.oos-verdict{border-left:3px solid var(--amber);padding:10px 13px;margin-top:14px;background:#0a1017}.oos-verdict.pass{border-color:var(--green)}
+    @media(max-width:1100px){.ladder,.validation-grid{grid-template-columns:repeat(3,1fr)}.limit-form,.policy-grid{grid-template-columns:repeat(3,1fr)}}@media(max-width:900px){.grid{grid-template-columns:1fr}.agents,.replay,.moonshot,.broker,.validation,.oos{grid-column:auto}.agent-grid{grid-template-columns:repeat(2,1fr)}.settings{grid-column:auto}.settings-grid,.lab-grid,.moon-grid,.oos-windows{grid-template-columns:1fr}.oos-controls{grid-template-columns:repeat(2,1fr)}.factor-grid{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.shell{padding:12px}.paper{font-size:11px}.hero,.account,.agents,.feed,.ledger,.settings,.replay,.moonshot,.broker,.validation,.oos{padding:14px}.agent-grid,.settings-grid,.builder-grid,.ladder,.validation-grid,.limit-form,.policy-grid,.oos-controls{grid-template-columns:1fr}.event{grid-template-columns:58px 72px 1fr}.big{font-size:34px}.factor-grid{grid-template-columns:1fr}.sample-paths{grid-template-columns:repeat(2,1fr)}}
+  
+/* Research Studio */
+body{background:#080e1b;color:#e9eef7;font-size:16px}
+.shell{max-width:1440px;padding:30px 40px}
+.topbar{padding-bottom:22px;border-bottom:1px solid #293447}.brand{letter-spacing:.22em;font-size:21px}
+.workspace-nav{display:flex;gap:8px;margin:24px 0}.workspace-nav button{background:transparent;border:1px solid transparent;border-radius:10px;color:#a9b6cd;padding:12px 18px;font-size:14px}
+.workspace-nav button[aria-pressed=true]{background:#20332f;border-color:#446c5b;color:#a0ffd7}
+.owner-line{font-size:12px;letter-spacing:.14em;color:#d1deed;display:flex;justify-content:space-between;margin:22px 0}.owner-line span{color:#9cabc0}
+.panel{background:#111b2b;border:1px solid #2a384c;border-radius:20px;box-shadow:none;padding:24px}
+.grid{gap:20px}.hero{min-height:330px;background:radial-gradient(ellipse at 85% 90%,#214239,transparent 65%),#111b2b}
+.hero h1{font-size:48px;line-height:1.1;letter-spacing:-.04em}.hero:after{display:none}.sub{color:#bac7d9;line-height:1.7}
+.hero .pulse-wrap{margin-top:20px}.big{font-size:48px}.metric{background:#0c1523;border-color:#2a384c}
+.metric b{font-size:22px}.metric #trust{font-size:18px}
+.label,.tiny,.agent p,.schema,.vcard p,.rung p,.wm span,.batch span,.path span,.factor span,.source-links,.notice,.vmeta,.gate,.status,.eyebrow,.checkstate{font-size:12px;color:#acbad0}
+.control label,.limit-field label,.policy span,.message,th,.event,.checkrow{font-size:14px}
+.event{grid-template-columns:80px 100px 1fr}.event time{font-size:12px}.agent{min-height:185px;background:#0d1625}
+.agent h3{font-size:19px}.agent .state{font-size:12px}.agent .score{font-size:22px}
+.primary{background:#97f4c7;border-radius:10px;padding:13px 18px}.secondary{border-color:#40516b;background:#152238}
+.primary:focus-visible,.secondary:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #84caff;outline-offset:3px}
+button:disabled{cursor:not-allowed;opacity:.55}
+.ladder{grid-template-columns:repeat(4,minmax(0,1fr))}.rung{padding:18px}.rung h3{font-size:17px}.rung p{line-height:1.6}
+.validation-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.vcard{padding:20px}.vcard h3{font-size:18px}.vcard p{min-height:60px}
+.limit-form{grid-template-columns:repeat(5,minmax(0,1fr))}.limit-field{padding:14px}.limit-field input{font-size:20px}
+.result-card:before{display:none}.builder,.result-card,.window{background:#0d1625;padding:20px}
+.sim-row{grid-template-columns:140px 1fr 75px;font-size:14px}.sample-paths,.batch-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.wm span{line-height:1.5}.wm b{font-size:16px}.schema{display:block;white-space:normal;line-height:1.7}
+[hidden]{display:none!important}.panel-head{align-items:flex-start}.panel-head strong{font-size:20px}.policy b{font-size:16px}
+.notice{line-height:1.7}.select{padding:12px}.window-metrics{gap:12px}.oos-controls{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:900px){.shell{padding:20px}.grid,.moon-grid,.lab-grid{grid-template-columns:1fr}.validation-grid,.ladder,.limit-form,.policy-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.owner-line{display:block}.owner-line span{display:block;margin-top:8px}.workspace-nav{flex-wrap:wrap}}
+@media(max-width:560px){.shell{padding:12px}.panel{padding:18px}.hero h1{font-size:34px}.topbar{flex-wrap:wrap}.paper{margin-left:0}.validation-grid,.ladder,.limit-form,.policy-grid,.oos-controls{grid-template-columns:1fr}.panel-head{flex-wrap:wrap}.batch-grid,.sample-paths{grid-template-columns:1fr 1fr}.workspace-nav button{padding:10px}.event{grid-template-columns:65px 1fr}.event .message{grid-column:1/-1}.sim-row{grid-template-columns:105px 1fr 58px}.hero .controls{align-items:stretch;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+.media{grid-column:1/-1}.media h2{font-size:32px;letter-spacing:-.03em;margin:10px 0}.news-toolbar{display:grid;grid-template-columns:2fr 1fr 1fr;gap:16px;margin:20px 0}.news-layout{display:grid;grid-template-columns:2fr 1fr;gap:28px;margin-top:24px}.news-layout aside{border-left:1px solid #2a384c;padding-left:24px}.news-item{background:#0d1625;border:1px solid #2a384c;border-radius:16px;padding:22px;margin-bottom:14px}.news-item a{color:#b2d8ff;text-decoration:none;font-size:20px;line-height:1.5}.news-meta{color:#adbad0;font-size:12px;line-height:1.7;margin-bottom:12px}.news-item p{font-size:14px;line-height:1.7}.source-roster{display:grid;gap:12px}.source-roster a{color:#bacbe3}.source-roster small{display:block;color:#acbad0;font-size:12px}.media details{border-top:1px solid #2a384c;padding-top:18px;margin-top:22px;font-size:14px;line-height:1.7}
+@media(max-width:800px){.news-layout,.news-toolbar{grid-template-columns:1fr}.news-layout aside{border-left:0;padding-left:0}}
+.agent .score{position:static;display:block;margin-top:18px;font-size:24px}.agent .state{position:static;display:block;margin-top:8px;font-size:12px;overflow-wrap:anywhere}.engine-lab .news-item{min-width:0}.engine-lab p{overflow-wrap:anywhere}
+/* Umbrella observatory: functional 3D engine topology, not a price forecast. */
+body{background:radial-gradient(ellipse at 10% 0%,#123543 0,transparent 45%),#050910;font-size:16px}
+.shell{max-width:1600px}.panel{border-color:#223744;background:linear-gradient(135deg,#0c1923ee,#080f18);box-shadow:0 18px 50px #0003}.topbar{padding:14px 0}.brand{letter-spacing:.22em}.workspace-nav{position:sticky;top:0;z-index:20;background:#071019f5;backdrop-filter:blur(16px);padding:12px;border:1px solid #263c49;border-radius:14px}.workspace-nav button{font-size:14px}.owner-line{letter-spacing:.08em}.grid{gap:20px}.observatory{grid-column:1/-1;overflow:hidden}.orbit-head{padding:24px 28px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:18px;border-bottom:1px solid #223744}.orbit-head h1{font-size:clamp(26px,4vw,40px);letter-spacing:-.04em;margin:6px 0 0}.orbit-layout{display:grid;grid-template-columns:minmax(0,1fr) 330px}.orbit-stage{position:relative;min-width:0;background:radial-gradient(ellipse at 50% 45%,#16334566,transparent 70%)}#orbitCanvas{display:block;width:100%;height:440px;touch-action:pan-y;cursor:grab}#orbitCanvas:active{cursor:grabbing}.orbit-caption{padding:0 24px 18px;color:#9eb6c4;font-size:13px}.orbit-inspector{padding:26px;border-left:1px solid #223744;background:#08121bbc;min-width:0}.orbit-inspector h2{font-size:32px;letter-spacing:-.03em;margin:14px 0 6px}.orbit-inspector p{color:#b6c9d6;overflow-wrap:anywhere}.orbit-value{font:600 32px ui-monospace,monospace;color:#7bcfff;margin:24px 0 8px}.orbit-state{font-size:14px;color:#f5d386}.orbit-controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:18px 24px;border-top:1px solid #223744}.orbit-controls button{font-size:14px}.orbit-controls label{font-size:14px;display:flex;align-items:center;gap:10px}.orbit-select{padding:10px;background:#102332;border:1px solid #375366;color:#eef6fa;border-radius:9px}.orbit-agents{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px}.orbit-agents button{border:1px solid #304b5e;background:#0e2030;color:#c8dce8;padding:8px 12px;border-radius:8px;font-size:14px}.orbit-agents button[aria-pressed=true]{border-color:#8dd9f7;background:#163b4b;color:#fff}.orbit-lock{padding:12px 24px;background:#221d1455;color:#f5d386;font-size:14px;border-top:1px solid #483e2b}.orbit-stamp{font:12px ui-monospace,monospace;color:#93aebe}.hero h1{font-size:38px}.hero{min-height:0}.pulse-wrap{display:none}button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:3px solid #92e6ff;outline-offset:4px}.orbit-controls input{max-width:130px}.agent{border-radius:12px}.agent p,.agent .state{font-size:14px}
+@media(max-width:800px){.orbit-layout{grid-template-columns:1fr}.orbit-inspector{border-left:0;border-top:1px solid #223744}.orbit-inspector h2{font-size:25px;margin:8px 0}.orbit-value{margin:12px 0;font-size:26px}#orbitCanvas{height:350px}.orbit-head{padding:20px}.orbit-controls{padding:16px}.paper{max-width:180px}.workspace-nav{position:static}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+.world-desk{border:1px solid #31566c;border-radius:20px;overflow:hidden;margin:24px 0;background:#060f19}.world-layout{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(300px,1fr)}.world-stage{background:radial-gradient(ellipse at center,#113c5166,transparent 68%);min-width:0}.world-stage canvas{width:100%;height:450px;display:block;cursor:grab;touch-action:pan-y}.world-stage canvas:active{cursor:grabbing}.world-inspector{padding:26px;border-left:1px solid #284656;min-width:0}.world-inspector h3{font-size:30px;letter-spacing:-.03em;margin:10px 0}.world-inspector p{line-height:1.65;color:#bed0dc}.world-kicker{font-size:12px;letter-spacing:.12em;color:#81cee9}.world-channels{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.world-channels span{padding:7px 10px;background:#123242;color:#bce5f5;border:1px solid #2e566a;border-radius:7px;font-size:14px}.world-region-buttons{display:flex;flex-wrap:wrap;gap:8px;padding:18px 24px;border-top:1px solid #284656}.world-region-buttons button{font-size:14px;padding:9px 12px;background:#0d2030;border:1px solid #355369;border-radius:8px;color:#c8deeb}.world-region-buttons button[aria-pressed=true]{background:#214353;border-color:#8ae0f6;color:white}.world-evidence{border-top:1px solid #345164;margin-top:22px;padding-top:18px}.world-evidence a{display:block;color:#a9ddfa;font-size:16px;margin:10px 0}.world-evidence small{display:block;color:#aec0ce;line-height:1.6}.world-caption{padding:0 24px 20px;color:#a1b9c8;font-size:13px}.world-bottom{padding:16px 24px;border-top:1px solid #284656;background:#132634;color:#ccdeeb;font-size:14px}.world-inspector .world-hypothesis{color:#f5d386;font-size:13px}.world-date{color:#a7c4d5;font:12px ui-monospace,monospace}
+@media(max-width:850px){.world-layout{grid-template-columns:1fr}.world-inspector{border-left:0;border-top:1px solid #284656}.world-stage canvas{height:360px}}
+.visual-library{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:24px 0}.visual-library figure{margin:0;border:1px solid #315166;border-radius:14px;overflow:hidden;background:#081420}.visual-library img{width:100%;height:230px;object-fit:contain;background:#02060b;display:block}.visual-library figcaption{padding:16px;font-size:14px;color:#bcd0df}.visual-library a{color:#a5dffa}.video-sources{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.video-sources a{display:block;padding:14px 18px;background:#153345;border:1px solid #426779;border-radius:10px;color:#d8eefb;text-decoration:none}.media-image-error{padding:24px;color:#f5d386}@media(max-width:650px){.visual-library{grid-template-columns:1fr}}
+.comms{padding:22px 24px;border-top:1px solid #304c5d}.comms-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:16px}.comms-list{max-height:260px;overflow:auto;display:grid;gap:7px}.comms-list button{padding:12px;text-align:left;background:#102332;color:#cee2ed;border:1px solid #315366;border-radius:8px;font-size:14px}.comms-list button[aria-pressed=true]{border-color:#9fe6ff;background:#1c3c50}.comms pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:13px;color:#b9cedd;max-height:260px;overflow:auto;margin:0;padding:16px;background:#07131e;border-radius:10px}.comms-summary{font-size:14px;color:#a5c4d5}.comms h3{margin:0 0 10px}@media(max-width:750px){.comms-grid{grid-template-columns:1fr}}
+.charts{grid-column:1/-1;padding:24px}.chart-toolbar{display:flex;flex-wrap:wrap;gap:14px;align-items:end;margin:18px 0}.chart-toolbar label{display:grid;gap:6px;font-size:14px;color:#bbd2df}.chart-toolbar select{max-width:100%;background:#102332;border:1px solid #38566a;border-radius:9px;padding:10px;color:#e2f0f8}.chart-frame{width:100%;height:600px;border:1px solid #345162;border-radius:12px;background:#08131f}.chart-empty{height:300px;display:grid;place-content:center;text-align:center;border:1px dashed #3b5d73;border-radius:12px;padding:24px;color:#a9c8da}.chart-disclosure{border-left:3px solid #f5d386;padding:12px 16px;background:#28211766;font-size:14px;color:#efd8a8}.chart-links{display:flex;gap:18px;flex-wrap:wrap;margin:14px 0}.chart-links a{color:#9bdfff}.chart-status{font-size:14px;color:#b4cddc}@media(max-width:650px){.chart-frame{height:460px}.charts{padding:16px}.chart-toolbar{align-items:stretch;flex-direction:column}}
+.learn{grid-column:1/-1;padding:clamp(18px,3vw,38px);font-size:16px;line-height:1.65}.learn h1{font-size:clamp(30px,4vw,48px);line-height:1.1;margin:12px 0}.learn h2{margin-top:32px}.learn p{color:#b7c8d6;max-width:85ch}.learn-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.learn-card{border:1px solid #304355;border-radius:14px;padding:20px;background:#0a1520}.learn-card h3{margin:0 0 8px;color:#a0f3cf}.learn-tabs{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0}.learn-tabs button[aria-pressed=true]{background:#183b35;border-color:#67f5b8}.learn input,.learn select{background:#102331;border:1px solid #456176;border-radius:8px;color:#ecf4f1;padding:10px;max-width:100%;width:100%}.learn label{display:block;margin-bottom:12px}.learn a{color:#8edfff}.learn details{border-bottom:1px solid #304355;padding:13px 0}.learn summary{cursor:pointer;font-weight:600}.learn output{display:block;font-size:26px;color:#a0f3cf;margin:12px 0}.learn .learn-note{border-left:3px solid #e6ba70;padding:12px 18px;background:#191c20}.learn button:focus-visible,.learn input:focus-visible,.learn select:focus-visible,.learn summary:focus-visible{outline:3px solid #8edfff;outline-offset:3px}@media(max-width:720px){.learn-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main class="shell" id="app">
+  <header class="topbar"><div class="brand">HEARTBEAT</div><span class="version">v0.3</span><div class="paper"><span class="live-dot"></span>RESEARCH ONLY · BROKER OFFLINE</div></header><nav class="workspace-nav" aria-label="Workspace"><button data-view="overview" aria-pressed="true">01 · Overview</button><button data-view="evidence">02 · Evidence</button><button data-view="simulations">03 · Scenario lab</button><button data-view="broker">04 · Robinhood path</button><button data-view="media">05 · Media Desk</button></nav><p class="owner-line">The Umbrella Institute <span>PERSONAL RESEARCH STUDIO / NO EXECUTION CONNECTION</span></p>
+  <section class="grid">
+    <section class="panel learn" aria-label="Heartbeat learning center">
+      <div class="eyebrow">THE UMBRELLA INSTITUTE / LEARNING CENTER</div>
+      <h1>Understand the market.<br>Understand your tools.</h1>
+      <p>Start with one instrument and one question. Heartbeat brings observations, competing explanations and evidence checks into one workspace so you can build a repeatable research habit. Its value is making your reasoning visible; a profitable trading edge has not been established.</p>
+      <p class="learn-note">Published website ≠ verified live market feed. Connected feed ≠ validated strategy. Completed lessons ≠ trading approval. Readiness and brokerage locks remain independent of this learning section.</p>
+      <h2>Meet your five research engines</h2>
+      <p>Select an engine to see what it contributes and what its output cannot tell you.</p>
+      <div class="learn-tabs" id="learnAgents" aria-label="Explore the agents"></div>
+      <article class="learn-card" aria-live="polite"><h3 id="learnAgentTitle"></h3><p id="learnAgentRole"></p><p id="learnAgentLimit"></p></article>
+      <p>The orbit shows these modules exchanging structured observations. They share the same underlying data, so agreement is not five independent confirmations. They are local rule-based modules; Professor currently produces a deterministic summary, not an independently reasoning language model.</p>
+      <h2>Your first research session</h2>
+      <div class="learn-grid">
+        <article class="learn-card"><h3>01 / Identify the instrument</h3><p>A stock is company ownership. An ETF holds or tracks a basket or exposure. An index is a reference measure. A bond is debt; a bond ETF has its own fluctuating share price. Spot crypto is distinct from a crypto option. QQQ, the Nasdaq Composite and Nasdaq-100 are different instruments.</p><button class="secondary" data-learn-go="charts">Explore US Charts</button></article>
+        <article class="learn-card"><h3>02 / Check the evidence clock</h3><p>Look for the source, observation time, market session and stale-data flags. A candle summarizes open, high, low and close over an interval; its current unfinished shape can change. US chart widgets are display-only and do not feed the engines.</p><button class="secondary" data-learn-go="overview">Inspect feed readiness</button></article>
+        <article class="learn-card"><h3>03 / Ask what could disprove it</h3><p>Compare Tokyo’s activity with Palermo’s price structure and Stockholm’s quoted liquidity. Read Denver’s objections. In Media Desk, check publication time, primary sources and whether a headline is already reflected in prices. A regional link is a research question, not a directional forecast.</p><button class="secondary" data-learn-go="media">Explore Media Desk</button></article>
+        <article class="learn-card"><h3>04 / Record before the outcome</h3><p>Write down the idea, available evidence, rejection reasons and maximum possible loss. Compare outcomes against a benchmark after costs. Keep losing and rejected observations too. The paper ledger is not yet an operating, audited execution system.</p><button class="secondary" data-learn-go="evidence">Explore Evidence</button></article>
+      </div>
+      <h2>Why the pieces belong together</h2>
+      <p>Charts describe price behavior; the engines organize measurements; Media Desk adds context; the journal preserves what was known; the Evidence view asks whether the rules survive testing. The Scenario lab explores assumptions. The Robinhood path keeps account access and order permission separate from research. This structure can help you ask better questions and spot contradictions before committing money.</p>
+      <div class="learn-grid">
+       <article class="learn-card"><h3>Read the score correctly</h3><p>The proposed composite combines Tokyo (25%), Palermo (25%), inverted Denver risk (20%), Stockholm (15%) and risk control (15%). It is a research ranking, not a probability of profit. A score of 80 does not mean an 80% win rate. Current spot metrics do not implement a calibrated options scoring system. A failed hard gate takes priority over any score.</p></article>
+       <article class="learn-card"><h3>Read the evidence correctly</h3><p>The rollout requires 300 historical observations, three chronological unseen test windows, 100 timestamped paper trades and 50 reconciled shadow decisions. Counts alone do not pass the system: costs, drawdown, sample adequacy, leakage and concentration must also be assessed. A green feed check only describes data health.</p></article>
+      </div>
+      <h2>Try the math: one purchased option</h2>
+      <p>Educational expiration payoff only. Change the numbers to see how a correct direction can still lose money. This example assumes a standard 100-share equity contract, cash-valued payoff and no resulting stock position; actual exercise and settlement obligations differ. It is not a live quote or a recommendation.</p>
+      <div class="learn-grid">
+       <div class="learn-card"><label>Option type<select id="learnType"><option value="call">Purchased call</option><option value="put">Purchased put</option></select></label><label>Strike price ($)<input id="learnStrike" type="number" min="0.01" step="0.01" value="100"></label><label>Premium paid per share ($)<input id="learnPremium" type="number" min="0.01" step="0.01" value="2"></label><label>Underlying price at expiration ($)<input id="learnSpot" type="number" min="0" step="0.01" value="101"></label><label>Total fees ($)<input id="learnFees" type="number" min="0" step="0.01" value="1"></label></div>
+       <div class="learn-card" aria-live="polite"><h3>Hypothetical result</h3><output id="learnPayoff"></output><p id="learnMath"></p><p id="learnBreakEven"></p><p>Premium should represent what you actually pay. This calculator does not model pre-expiration pricing, spreads or slippage. At expiration, remaining time value is zero; do not subtract theta again from intrinsic value.</p><p>A $5 stop is not a guaranteed $5 maximum loss. A purchased option can lose its full premium plus costs; exercise can create a separate stock position. Under Heartbeat’s $5 position-loss limit, many contracts will not fit. No eligible trade is a valid outcome.</p></div>
+      </div>
+      <h2>The language of Heartbeat</h2>
+      <label for="learnSearch">Find a term<input id="learnSearch" type="search" placeholder="Try theta, drawdown, slippage…"></label><p id="learnCount" role="status"></p><div id="learnGlossary"></div>
+      <h2>Practice with honest expectations</h2>
+      <p>The Scenario lab’s 10×–100× targets are speculative mathematical scenarios, not realistic expected returns. Its assumptions are not calibrated to audited options data. Studying a chart, recognizing an anomaly and being able to execute an options trade are different milestones.</p>
+      <p>For foundational options definitions and risk education, read <a href="https://www.finra.org/investors/investing/investment-products/options" target="_blank" rel="noopener noreferrer">FINRA’s options guide</a>. For the display’s limitations, read <a href="https://www.tradingview.com/widget-docs/faq/data/" target="_blank" rel="noopener noreferrer">TradingView’s widget data FAQ</a>. These references support learning; they do not validate Heartbeat’s strategy.</p>
+    </section>
+    <section class="panel charts" aria-label="US market candlestick charts">
+     <div class="panel-head"><div><div class="eyebrow">US MARKET CHART DESK</div><h2>Candles, with the source in view.</h2></div><span class="status watch">DELAYED · DISPLAY ONLY</span></div>
+     <p class="chart-disclosure">Real-time US feed: NOT CONNECTED. This chart uses TradingView’s public widget with delayed US-stock data. Check its timestamps and market-session labels. Do not use delayed candles as executable day-trading prices.</p>
+     <div class="chart-toolbar"><label>Market / instrument<select id="chartSymbol"><optgroup label="Equity-index ETFs"><option value="NASDAQ:QQQ">QQQ · Nasdaq-100 ETF</option><option value="AMEX:SPY">SPY · S&amp;P 500 ETF</option><option value="AMEX:IWM">IWM · Russell 2000 ETF</option></optgroup><optgroup label="Gold and bond ETFs"><option value="AMEX:GLD">GLD · Gold trust</option><option value="NASDAQ:TLT">TLT · 20+ year Treasury bond ETF</option><option value="NASDAQ:IEF">IEF · 7–10 year Treasury bond ETF</option><option value="AMEX:HYG">HYG · High-yield corporate bond ETF</option></optgroup><optgroup label="Individual stocks"><option value="NASDAQ:AAPL">AAPL · Apple</option><option value="NASDAQ:MSFT">MSFT · Microsoft</option><option value="NASDAQ:NVDA">NVDA · NVIDIA</option><option value="NASDAQ:AMZN">AMZN · Amazon</option><option value="NASDAQ:TSLA">TSLA · Tesla</option></optgroup><optgroup label="Index references · not directly tradable; widget access may be restricted"><option value="NASDAQ:IXIC">Nasdaq Composite · index reference</option><option value="NASDAQ:NDX">Nasdaq-100 · index reference</option><option value="SP:SPX">S&amp;P 500 · index reference</option></optgroup></select></label><label>Candle interval<select id="chartInterval"><option value="1">1 minute</option><option value="5" selected>5 minutes</option><option value="15">15 minutes</option><option value="60">1 hour</option><option value="D">1 day</option></select></label><button class="primary" id="chartLoad">Load chart</button><button class="secondary" id="chartUnload">Disconnect chart</button></div>
+     <p id="chartDescription" class="chart-status">QQQ tracks the Nasdaq-100, not the entire Nasdaq Composite.</p><p id="chartStatus" class="chart-status" role="status">Not loaded. Load chart to contact TradingView. No API key or brokerage credentials are required.</p>
+     <div id="chartHost" class="chart-empty">Choose an instrument and load its candlestick chart.<br>No demonstration prices are shown.</div>
+     <div class="chart-links"><a id="chartExternal" href="https://www.tradingview.com/chart/?symbol=NASDAQ%3AQQQ" target="_blank" rel="noopener noreferrer">Open selected symbol on TradingView ↗</a><a href="https://www.tradingview.com/widget-docs/faq/data/" target="_blank" rel="noopener noreferrer">Data delay and widget limitations ↗</a></div>
+     <p class="tiny">Charts by TradingView. Its chart toolbar is authoritative if you change symbols inside the widget. The preset above is only the requested starting symbol. The embedded chart is isolated: Heartbeat cannot read its candles, verify their freshness, or pass them to the bots. A loaded frame does not prove prices are arriving.</p>
+     <details><summary>What is needed for verified real-time candles?</summary><p>A server-side market-data connection with the required live and historical entitlements, timestamped OHLCV storage, a market-session calendar, reconnect handling, and stale-data checks. Massive is installed in chat, but backend authentication and entitlements have not been verified. Do not enter API keys into this page or paste them into chat.</p><p>Bond ETFs are not individual bonds; gold shares are not futures contracts. Index references are not directly tradable. Chart availability does not establish account eligibility, sufficient buying power, suitable liquidity, or an investment recommendation. Options and futures-contract feeds remain unconnected. Brokerage execution stays locked.</p></details>
+    </section>
+    <section class="panel observatory" aria-label="Interactive 3D research engine model">
+      <div class="orbit-head"><div><div class="eyebrow">THE UMBRELLA INSTITUTE / OBSERVATORY</div><h1>Your research, in orbit.</h1></div><div><label for="orbitSymbol" class="tiny">Spot research pair</label><br><select id="orbitSymbol" class="orbit-select"><option>BTCUSDT</option><option>ETHUSDT</option><option>XRPUSDT</option><option>SOLUSDT</option></select> <button id="orbitConnect" class="primary">Connect prices</button></div></div>
+      <div class="orbit-layout"><div class="orbit-stage"><canvas id="orbitCanvas" tabindex="0" aria-label="3D engine network. Drag horizontally to rotate. Arrow keys rotate and tilt. Select an engine using the buttons below.">Use the five engine buttons to inspect research outputs.</canvas><div class="orbit-caption">Drag to rotate · arrow keys to tilt · select a node to inspect<br>Connections show information relationships. Distance and motion do not encode price or confidence.</div></div><aside class="orbit-inspector"><div class="eyebrow">ENGINE INSPECTOR</div><h2 id="orbitName">Tokyo</h2><div id="orbitRole" class="tiny">Flow research</div><div id="orbitMetric" class="orbit-value">—</div><div id="orbitStatus" class="orbit-state">NO DATA</div><p id="orbitDetail">Connect the public spot feed to inspect actual research outputs.</p><div id="orbitStamp" class="orbit-stamp">No observation yet</div><div class="orbit-agents" id="orbitAgents" aria-label="Select research engine"></div></aside></div>
+      <div class="orbit-controls"><button id="orbitMotion" class="secondary" aria-pressed="false">Start rotation</button><button id="orbitReset" class="secondary">Reset view</button><label>Zoom <input id="orbitZoom" type="range" min="70" max="130" value="100"></label><span id="orbitFeed" class="orbit-stamp" role="status">FEED DISCONNECTED</span></div>
+      <section class="comms" aria-label="Engine communications"><div class="panel-head"><h3>Inside the conversation</h3><button class="secondary" id="commsExport">Export messages</button></div><p id="commsStatus" class="comms-summary">Waiting for fresh inputs.</p><label class="tiny" for="commsFilter">Messages shown</label> <select class="orbit-select" id="commsFilter"><option value="all">All five engines</option><option value="selected">Selected engine only</option></select><div class="comms-grid"><div id="commsList" class="comms-list"></div><pre id="commsDetail">Select a message to inspect its payload and recipient review.</pre></div><p class="tiny">Local rule modules exchange structured observations with all four peers, at most once every 10 seconds per pair when inputs change. Colored links show recorded deliveries; moving dots illustrate direction, not network latency. No LLM calls. Session-only history, not an audited ledger. Peer reviews do not change trading permissions.</p></section>
+      <div class="orbit-lock">OPTIONS EXECUTION LOCKED · Spot research only. No validated edge, contract feed, or broker connection.</div>
+    </section>
+    <section class="panel readiness" style="grid-column:1/-1">
+      <div class="panel-head"><div><div class="eyebrow">LIVE READINESS · OBSERVED STATE, NOT A TRUST SCORE</div><h2>Research health ≠ trading permission</h2></div><span id="readinessResearch" role="status">CHECKING</span></div>
+      <p id="readinessChecked">Waiting for first evaluation.</p>
+      <div class="metrics"><div class="metric"><span class="tiny">Eligible spot pairs</span><b id="readinessPairs">0 / 4</b></div><div class="metric"><span class="tiny">Options trading</span><b style="color:#ff93a4">LOCKED</b></div></div>
+      <p id="readinessExplanation">No provider or engine state has been evaluated yet.</p>
+      <div class="table-wrap"><table><thead><tr><th>Pair</th><th>Quote age</th><th>Closed-bar age</th><th>Bars retained</th><th>Engine result age</th><th>Current blockers</th></tr></thead><tbody id="readinessRows"></tbody></table></div>
+      <p id="readinessPolicy"></p>
+      <p class="notice">Trading evidence source: NOT CONNECTED. Historical observations, out-of-sample results, paper trades and shadow-account decisions cannot be verified here. Unknown is not passed. Receiving candles is not completing trades. Policy acknowledgment is not server enforcement. No execution API exists in this prototype.</p>
+      <div class="controls"><button class="secondary" id="readinessRefresh">Check current state</button><button class="secondary" id="readinessExport">Export readiness snapshot</button></div>
+      <details><summary>What a green research status means</summary><p>All four pairs have a connected stream, quote and local receipt ages ≤10 seconds, at least 21 contiguous completed one-minute bars with latest bar age ≤90 seconds, and complete five-engine results evaluated within 3 seconds. Required metrics must be finite. Analytics must be running. It does not mean a profitable signal or permission to trade.</p><p>Rechecked every second while this page is active and on pause, reconnect, disconnect and tab return. Browser suspension can stop updates; inspect the evaluation timestamp. This is a local diagnostic, not a server-side guarantee or background monitoring service. Exports are snapshots, not signed audit evidence.</p></details>
+    </section>
+    <section class="panel market" style="grid-column:1/-1">
+      <div class="panel-head"><div><div class="eyebrow">BINANCE · PUBLIC SPOT MARKET DATA</div><h2>Market watch</h2></div><span id="marketStatus" role="status">NOT CONNECTED</span></div>
+      <div class="controls"><button class="primary" id="marketConnect">Connect prices</button><button class="secondary" id="marketStop">Disconnect</button></div>
+      <p id="marketNote">Direct public feed, no API key. Runs only while this page is open. Network, browser, or regional restrictions may prevent access.</p>
+      <div class="table-wrap"><table><thead><tr><th>Spot pair</th><th>Last · USDT</th><th>Bid / Ask · USDT</th><th>24h change</th><th>24h base volume</th><th>Exchange event · UTC</th><th>Feed age / status</th></tr></thead><tbody id="marketRows"></tbody></table></div>
+      <p class="tiny">USDT is not USD. Exchange-specific spot quotes—not options, consolidated stock quotes, or executable Robinhood prices. No paper fills or validation passes are created from this display. Stocks and options: NOT CONNECTED.</p>
+      <a href="https://developers.binance.com/en/docs/products/spot/faqs/market_data_only" target="_blank" rel="noopener noreferrer">Source documentation</a>
+      <details open style="margin-top:24px"><summary>Short-term options research · BTC / ETH / XRP / SOL</summary>
+        <p>Watchlist inclusion is not a finding of positive expected return. The live values above are spot prices only. No options chain, Greeks, IV, open interest, premium or contract-level liquidity is connected.</p>
+        <div class="table-wrap"><table><thead><tr><th>Coin</th><th>Research focus—not a current catalyst claim</th><th>Decision now</th></tr></thead><tbody>
+        <tr><td>BTC</td><td>Macro sensitivity; compare expected move with option premium</td><td>Watch only · chain unavailable</td></tr>
+        <tr><td>ETH</td><td>Relative performance versus BTC; verify dated network and fund-flow news</td><td>Watch only · chain unavailable</td></tr>
+        <tr><td>XRP</td><td>Verify regulatory, issuer and adoption headlines; distinguish Ripple company news from XRP token exposure</td><td>Watch only · chain unavailable</td></tr>
+        <tr><td>SOL</td><td>Verify network events and activity; compare volatility with premium paid</td><td>Watch only · chain unavailable</td></tr>
+        </tbody></table></div>
+        <p>CME announced trading in options on SOL, Micro SOL, XRP and Micro XRP futures in October 2025. That is evidence of a product launch—not today's contract availability, affordability, or Robinhood support. Futures options are not spot coins or equity options. <a href="https://www.cmegroup.com/media-room/press-releases/2025/10/14/cme_group_announcesfirsttradesofoptionsonsolanaandxrpfutures.html" target="_blank" rel="noopener noreferrer">CME announcement</a></p>
+        <p>Research horizon: 7–30 days to expiration as a starting filter, not an optimized strategy. Before any candidate qualifies: verify venue/account eligibility, actual contracts and multipliers, fresh two-sided quotes, volume and open interest, IV/Greeks, costs, event timing, and full-loss exposure. No 0DTE.</p>
+        <p>Your $50 experiment retains its $5 maximum position loss. A stop order is not a guaranteed loss cap. If an eligible position cannot meet the limit including costs and settlement obligations, the decision is NO TRADE. No budget increase or execution unlock is implied.</p>
+      </details>
+    </section>
+    <article class="panel hero" id="hero">
+      <div class="eyebrow">HEARTBEAT / RESEARCH BEFORE CAPITAL</div>
+      <h1>Trust is built.<br><span>One record at a time.</span></h1>
+      <p class="sub">Your personal options research workspace. Evidence is separate from illustrations. Historical calibration, broker access, and execution are not yet implemented.</p>
+      <div class="controls"><button class="primary" id="toggle">Pause analytics</button><button class="secondary" id="step">Analyze now</button><button class="secondary" id="reset">Reset analysis counter</button></div>
+      <p class="tiny">Connect prices above to run all five deterministic spot engines. No model API calls, options approvals or simulated scores. Analysis runs in this browser only.</p>
+      <div class="pulse-wrap"><svg class="pulse-line" viewBox="0 0 900 70" preserveAspectRatio="none" aria-label="Animated heartbeat scan"><path d="M0 37H145L170 37L184 12L205 61L228 26L245 37H390L410 37L424 18L442 52L460 30L478 37H900" fill="none" stroke="#172b27" stroke-width="2"/><path class="pulse-path" d="M0 37H145L170 37L184 12L205 61L228 26L245 37H390L410 37L424 18L442 52L460 30L478 37H900" fill="none" stroke-width="3"/></svg></div>
+    </article>
+    <aside class="panel account"><div class="account-head"><span class="label">STARTER POLICY · NOT A BALANCE</span><span class="mode">NO FUNDS CONNECTED</span></div><div class="big" id="equity">$50.00</div><div class="metrics"><div class="metric"><span class="tiny">Verified P&amp;L</span><b id="pnl">—</b></div><div class="metric"><span class="tiny">Trust assessment</span><b id="trust">Unverified</b></div><div class="metric"><span class="tiny">Scans</span><b id="scans">0</b></div><div class="metric"><span class="tiny">Candidates</span><b id="candidates">0</b></div></div></aside>
+    <section class="panel replay">
+      <div class="panel-head"><div><div class="eyebrow">HISTORICAL REPLAY · NOT CONNECTED</div><strong>Test the trade—not the story.</strong></div><span class="source-badge">NO HISTORICAL RECORDS</span></div>
+      <div class="tabs" id="universeTabs"><button class="tab active" data-u="sp">S&amp;P 500</button><button class="tab" data-u="nasdaq">Nasdaq</button><button class="tab" data-u="crypto">Crypto research</button></div>
+      <div class="universe-list" id="universeList">SPY · SPX · AAPL · MSFT · NVDA · AMZN · META · GOOGL · BRK.B · JPM · XOM · UNH</div>
+      <div class="lab-grid">
+        <div class="builder"><div class="builder-grid">
+          <div class="control"><label for="asset">Underlying</label><select class="select" id="asset"></select></div>
+          <div class="control"><label for="direction">Strategy</label><select class="select" id="direction"><option value="call">Long call</option><option value="put">Long put</option><option value="spread">Defined-risk spread</option></select></div>
+          <div class="control"><label for="capital">Paper allocation</label><select class="select" id="capital"><option value="250">$250</option><option value="500" selected>$500</option><option value="1000">$1,000</option><option value="2500">$2,500</option></select></div>
+          <div class="control"><label for="holding">Holding window</label><select class="select" id="holding"><option value="1">1 session</option><option value="5" selected>5 sessions</option><option value="20">20 sessions</option></select></div>
+        </div><button class="primary" id="replayBtn">Historical replay unavailable</button><p class="tiny">Previous fabricated replay outcomes have been removed. Provider connections in chat do not automatically connect this HTML dashboard to historical data. Full-universe coverage is not implemented.</p></div>
+        <div class="result-card"><div class="result-top"><div><div class="eyebrow" id="replayId">HB-REPLAY-0001</div><h2 id="replayTitle">Select a universe and run a replay</h2></div><span class="status watch" id="replayOutcome">READY</span></div><div class="pnl-number" id="replayPnl">—</div><div class="tiny" id="replayMath">No verified fills or returns to calculate.</div><div class="factor-grid" id="factors"></div><p class="explain" id="replayExplain">Heartbeat will expose both winning and losing counterfactuals. It will not select only the best outcome after seeing the future.</p></div>
+      </div>
+      <div class="table-wrap replay-table"><table><thead><tr><th>Replay</th><th>Universe</th><th>Modeled buy</th><th>Modeled exit</th><th>Net P&amp;L</th><th>MFE / MAE</th><th>Why</th></tr></thead><tbody id="replayLedger"></tbody></table></div>
+    </section>
+    <section class="panel moonshot">
+      <div class="panel-head"><div><div class="eyebrow">MOONSHOT REALITY LAB</div><strong>Stress-test $50 to $5,000 across multiple batches.</strong></div><span class="source-badge">SIMULATION · NOT A FORECAST</span></div>
+      <div class="warning-strip"><strong>Targets are thresholds, not a prediction.</strong> Increasing starting capital changes dollar outcomes, but it does not create an edge or remove the possibility of losing the entire options allocation.</div>
+      <div class="moon-grid">
+        <div class="builder"><div class="control"><label for="moonCapital">Starting capital <b id="moonCapitalOut">$50</b></label><input class="range" id="moonCapital" type="range" value="50" min="50" max="5000" step="50"></div><div class="builder-grid"><div class="control"><label for="moonProfile">Illustrative distribution</label><select class="select" id="moonProfile"><option value="extreme">Toy A · dispersed</option><option value="split">Toy B · narrower</option><option value="discipline">Toy C · lower dispersion</option></select></div><div class="control"><label for="moonTarget">Moonshot target</label><select class="select" id="moonTarget"><option value="10">10×</option><option value="20" selected>20×</option><option value="30">30×</option><option value="40">40×</option><option value="50">50×</option><option value="60">60×</option><option value="70">70×</option><option value="80">80×</option><option value="90">90×</option><option value="100">100×</option></select></div><div class="control"><label for="moonTrials">Trials per batch</label><select class="select" id="moonTrials"><option value="500">500</option><option value="1000" selected>1,000</option><option value="5000">5,000</option><option value="10000">10,000</option></select></div><div class="control"><label for="moonBatches">Batches at once</label><select class="select" id="moonBatches"><option value="3">3</option><option value="5" selected>5</option><option value="10">10</option></select></div></div><button class="primary" id="moonBtn">Run reproducible batches</button><div class="reality-math"><div class="metric"><span class="tiny">Target ending value</span><b id="moonTargetValue">$1,000</b></div><div class="metric"><span class="tiny">Scenario capital at risk</span><b id="moonMaxLoss">$50</b></div><div class="metric"><span class="tiny">Required profit</span><b id="moonProfit">$950</b></div><div class="metric"><span class="tiny">Total simulated paths</span><b id="moonPaths">5,000</b></div></div></div>
+        <div class="result-card"><div class="result-top"><div><div class="eyebrow">SEEDED TOY MODEL · NOT CALIBRATED</div><h2 id="moonHeadline">Configure the experiment and run all batches</h2></div></div><div class="sim-bars" id="simBars"></div><div class="sample-paths" id="samplePaths"></div><div class="batch-grid" id="batchGrid"></div><p class="explain" id="moonExplain">A viral winner is one observation, not evidence of repeatable expectancy. Heartbeat records the denominator: every attempt, including total losses.</p></div>
+      </div>
+    </section>
+    <section class="panel broker">
+      <div class="panel-head"><div><div class="eyebrow">ROBINHOOD TRUST LADDER</div><strong>Execution stays locked until the evidence earns it.</strong></div><span class="status reject">BROKER DISCONNECTED</span></div>
+      <div class="ladder"><article class="rung now"><span class="num">STAGE 1</span><h3>300 observations</h3><p>Massive + Binance historical evidence.</p><span class="gate">AWAITING DATA</span></article><article class="rung"><span class="num">STAGE 2</span><h3>100 paper trades</h3><p>Timestamped executable bid/ask fills.</p><span class="gate">LOCKED</span></article><article class="rung"><span class="num">STAGE 3</span><h3>Read-only shadow</h3><p>Connect Robinhood without submitting orders.</p><span class="gate">LOCKED</span></article><article class="rung"><span class="num">STAGE 4</span><h3>50 comparisons</h3><p>Buying power, eligibility, spreads and contracts.</p><span class="gate">LOCKED</span></article><article class="rung"><span class="num">STAGE 5</span><h3>Dedicated funds</h3><p>Fund only what can be lost completely.</p><span class="gate">LOCKED</span></article><article class="rung"><span class="num">STAGE 6</span><h3>Human approval</h3><p>Every order requires explicit confirmation.</p><span class="gate">LOCKED</span></article><article class="rung"><span class="num">STAGE 7</span><h3>Limited automation</h3><p>Only after positive OOS and paper results.</p><span class="gate">LOCKED</span></article></div>
+      <div class="policy-grid"><div class="policy"><span>Dedicated budget</span><b>$50</b></div><div class="policy"><span>Maximum daily loss</span><b>$5</b></div><div class="policy"><span>Maximum position loss</span><b>$5</b></div><div class="policy"><span>Open positions / trades daily</span><b>1 / 1</b></div><div class="policy"><span>0DTE options</span><b class="off">DISABLED</b></div><div class="policy"><span>Earnings trades</span><b class="off">DISABLED</b></div><div class="policy"><span>Market orders / averaging down</span><b class="off">DISABLED</b></div><div class="policy"><span>Human approval</span><b class="on">REQUIRED</b></div><div class="policy"><span>Autonomous execution</span><b class="off">DISABLED</b></div></div>
+      <div class="broker-controls"><button class="secondary" id="readinessBtn">Run readiness check</button><button class="secondary locked" disabled>Connect Robinhood MCP</button><button class="secondary locked" disabled>Enable order placement</button><button class="secondary locked" disabled>Autonomous execution</button></div><p class="explain" id="readinessText">Current verdict: remain in historical research. Connection is intentionally disabled in this prototype.</p>
+      <p class="source-links">Design aligned to <a href="https://robinhood.com/us/en/agentic-trading/" target="_blank" rel="noreferrer">Robinhood Agentic Trading disclosures</a> and its <a href="https://robinhood.com/us/en/support/articles/options-knowledge-center/" target="_blank" rel="noreferrer">Options Knowledge Center</a>.</p>
+    </section>
+    <section class="panel validation">
+      <div class="panel-head"><div><div class="eyebrow">EVIDENCE GATE CENTER · PROTOTYPE</div><strong>Every unlock must be earned and auditable.</strong></div><span class="status watch" id="overallGate">0 OF 5 PASSED</span></div>
+      <div class="validation-grid">
+        <article class="vcard"><span class="eyebrow">01 · SAMPLE</span><h3>Required sample size</h3><p>Target: 300 historical observations. Rejected signals are logged separately; they are not closed trades.</p><div class="vstat" id="sampleStat">0 / 300</div><div class="vbar"><span id="sampleBar" style="width:0%"></span></div><div class="vmeta"><span>ALL REGIMES</span><span>LOCKED</span></div></article>
+        <article class="vcard"><span class="eyebrow">02 · OOS</span><h3>Out-of-sample stability</h3><p>Unseen data must retain positive expectancy without unacceptable drawdown.</p><div class="vstat" id="oosStat">NOT RUN</div><div class="vbar"><span id="oosBar" style="width:0%"></span></div><div class="vmeta"><span>WALK-FORWARD</span><span>LOCKED</span></div></article>
+        <article class="vcard"><span class="eyebrow">03 · FILLS</span><h3>Live paper fills</h3><p>Target: 100 completed live paper trades with timestamped quotes and entry/exit fills.</p><div class="vstat" id="fillStat">0 / 100</div><div class="vbar"><span id="fillBar" style="width:0%"></span></div><div class="vmeta"><span>SLIPPAGE LOGGED</span><span>LOCKED</span></div></article>
+        <article class="vcard"><span class="eyebrow">04 · SHADOW</span><h3>Shadow validation</h3><p>Compare proposed orders with actual account constraints—without submitting.</p><div class="vstat" id="shadowStat">0 / 50</div><div class="vbar"><span id="shadowBar" style="width:0%"></span></div><div class="vmeta"><span>READ-ONLY</span><span>LOCKED</span></div></article>
+        <article class="vcard"><span class="eyebrow">05 · LIMITS</span><h3>Starter policy</h3><p>Explicit limits must be saved before an order can ever reach review.</p><div class="vstat" id="limitStat">NOT SAVED</div><div class="vbar"><span id="limitBar" style="width:0%"></span></div><div class="vmeta"><span>HUMAN CONTROL</span><span>LOCKED</span></div></article>
+      </div>
+      <div class="limit-form"><div class="limit-field"><label for="budget">Dedicated experiment budget ($)</label><input id="budget" type="number" min="1" max="10000" value="50" readonly></div><div class="limit-field"><label for="dailyLoss">Maximum daily loss ($)</label><input id="dailyLoss" type="number" min="1" max="10000" value="5" readonly></div><div class="limit-field"><label for="positionLoss">Maximum position loss ($)</label><input id="positionLoss" type="number" min="1" max="10000" value="5" readonly></div><div class="limit-field"><label for="maxPositions">Maximum open positions</label><input id="maxPositions" type="number" min="1" max="20" value="1" readonly></div><div class="limit-field"><label for="maxTrades">Maximum trades per day</label><input id="maxTrades" type="number" min="1" max="50" value="1" readonly></div></div>
+      <div class="validation-actions"><button class="primary" id="saveLimits">Acknowledge starter policy</button><button class="secondary" id="evidenceBtn" disabled>Historical evidence source unavailable</button><button class="secondary" id="fillBtn" disabled>Paper-trading engine unavailable</button><button class="secondary locked" disabled>Start shadow validation</button></div>
+      <div class="checklist" id="gateChecklist"><div class="checkrow"><span class="checkmark">×</span><span>300+ closed historical signals with no survivorship filtering</span><span class="checkstate">MISSING</span></div><div class="checkrow"><span class="checkmark">×</span><span>Positive out-of-sample expectancy across three walk-forward windows</span><span class="checkstate">MISSING</span></div><div class="checkrow"><span class="checkmark">×</span><span>100+ timestamped paper fills with modeled-versus-real slippage</span><span class="checkstate">MISSING</span></div><div class="checkrow"><span class="checkmark">×</span><span>50+ read-only shadow decisions reconciled with account constraints</span><span class="checkstate">MISSING</span></div><div class="checkrow"><span class="checkmark">×</span><span>Starter policy acknowledged in this session; no server enforcement</span><span class="checkstate">MISSING</span></div></div>
+    </section>
+    <section class="panel oos">
+      <div class="panel-head"><div><div class="eyebrow">WALK-FORWARD LAB</div><strong>Three unseen windows. Every hard gate must pass.</strong></div><span class="status reject" id="oosVerdictBadge">NOT VERIFIED</span></div>
+      <div class="oos-controls"><div class="limit-field"><label>Minimum expectancy ($/trade)</label><input id="minExpectancy" type="number" value="0.01" step="0.01"></div><div class="limit-field"><label>Maximum drawdown (%)</label><input id="maxDrawdown" type="number" value="15" min="1" max="100"></div><div class="limit-field"><label>Minimum trades / window</label><input id="minTrades" type="number" value="50" min="10"></div><div class="limit-field"><label>Maximum top-ticker share (%)</label><input id="maxTicker" type="number" value="35" min="5" max="100"></div><div class="limit-field"><label>Minimum regimes / window</label><input id="minRegimes" type="number" value="3" min="1"></div></div>
+      <div class="oos-windows" id="oosWindows"></div>
+      <div class="import-row"><button class="secondary" id="demoOos">Run methodology demo</button><label class="filelabel">Inspect result JSON · unverified<input type="file" id="oosFile" accept="application/json,.json"></label><span class="schema">Summary format: three windows with trainStart, trainEnd, testStart, testEnd, expectancy, drawdown, trades, leakage, topTickerPct, regimes. All timestamps ISO 8601. Import checks structure, not truth.</span></div>
+      <div class="oos-verdict" id="oosVerdict">No trade-level backtest loaded. Summaries are unverified claims and cannot unlock any gate.</div>
+    </section>
+    <section class="panel agents"><div class="panel-head"><div><div class="eyebrow">AGENT FLOOR</div><strong>One signal. Five independent jobs.</strong></div><span class="tiny" id="cycle">Waiting for next scan</span></div><div class="agent-grid" id="agents"></div></section>
+    <section class="panel feed"><div class="panel-head"><strong>Session activity · not immutable</strong><span class="tiny">Spot observations / system notices · last 200 entries</span></div><div class="events" id="events" aria-live="polite"></div></section>
+    <section class="panel ledger"><div class="panel-head"><strong>Paper trade ledger · not connected</strong><span class="tiny">No trades or fills generated by spot analytics</span></div><div class="table-wrap"><table><thead><tr><th>Signal</th><th>Contract</th><th>Heartbeat</th><th>Decision</th><th>Risk</th><th>Recorded</th></tr></thead><tbody id="ledger"></tbody></table></div></section>
+    <section class="panel settings"><div class="panel-head"><strong>Research controls</strong><span class="tiny">changes apply to future scans</span></div><div class="settings-grid"><div class="control"><label>Minimum Heartbeat <b id="minOut">75</b></label><input id="minimum" type="range" min="55" max="90" value="75"></div><div class="control"><label>Max Denver noise <b id="noiseOut">79</b></label><input id="noise" type="range" min="40" max="90" value="79"></div><div class="control"><label>Minimum liquidity <b id="liqOut">60</b></label><input id="liquidity" type="range" min="40" max="90" value="60"></div><div class="control"><label for="speed">Scan speed</label><select class="select" id="speed"><option value="3600">Deliberate</option><option value="2300" selected>Normal</option><option value="1200">Fast</option></select></div></div></section>
+
+<section class="panel engine-lab" style="grid-column:1/-1">
+ <div class="panel-head"><div><div class="eyebrow">SPOT ANALYTICS · RULESET HB-SPOT-0.4</div><h2>Five engines. Observable evidence.</h2></div><span id="engineStatus" role="status">WAITING FOR CONNECTION</span></div>
+ <div class="controls"><label for="engineSymbol">Inspect pair</label><select class="select" id="engineSymbol"><option>BTCUSDT</option><option>ETHUSDT</option><option>XRPUSDT</option><option>SOLUSDT</option></select><button class="secondary" id="engineExport">Export analysis + input buffers</button></div>
+ <p id="engineInputs">No inputs received.</p><p id="engineSummary" class="notice">Connect prices to begin.</p>
+ <div id="engineDetails" class="news-toolbar" style="grid-template-columns:repeat(auto-fit,minmax(230px,1fr))"></div>
+ <div class="table-wrap"><table><thead><tr><th>Pair</th><th>Closed 1m bars</th><th>Relative volume</th><th>SMA trend</th><th>Spread (bps)</th><th>Data status</th><th>Options</th></tr></thead><tbody id="engineTable"></tbody></table></div>
+ <details><summary>Calculations and boundaries</summary><p>Tokyo compares the latest closed 1-minute volume to the previous 20-bar mean. Its taker-buy share uses actual taker-buy base volume; this is not institutional options flow. Palermo uses SMA5/SMA20, a simple mean of 14 true ranges (not Wilder-smoothed ATR), and 20-bar VWAP = quote volume / base volume. Denver requires 21 contiguous closed bars, latest bar age ≤90 seconds and quote age ≤10 seconds, with a connected feed. Stockholm reports the spot bid/ask spread and quoted top-level notional; it does not infer deep liquidity or executable fills.</p><p>Descriptive research flags: relative volume ≥2×; spot spread &gt;10 bps; quoted size below 50 USDT per side. These are uncalibrated versioned defaults, not statistically proven trade thresholds. Professor is deterministic reporting, not an LLM. Missing options chains, Greeks, IV, events, fees, eligibility, and validation always block options decisions. A successful data check is not a passed trust gate.</p><p>One public REST request per pair seeds up to 120 bars when you connect; only completed bars are retained. Closed candles then arrive over the public stream. Failed requests are visible and not retried automatically. Session buffers retain 180 bars/pair and 300 selected-pair snapshots; they are not immutable or durable, and are not paper trades. Reopening the page clears them. Export before closing.</p></details>
+</section>
+<section class="panel media" hidden>
+ <div class="world-desk">
+  <div class="orbit-head"><div><div class="world-kicker">GLOBAL MEDIA / US MARKET LENS</div><h2>One market. A world of influences.</h2></div><span class="world-date">LIVE NEWS FEED NOT CONNECTED</span></div>
+  <div class="world-layout"><div class="world-stage"><canvas id="worldCanvas" tabindex="0" aria-label="Interactive schematic globe. Drag to rotate, arrow keys to rotate and tilt. Choose a region using the region buttons below.">Use the region buttons below to explore possible US market connections.</canvas><div class="world-caption">Select a region · drag to rotate · arrow keys to tilt<br>Schematic latitude/longitude globe; pins are regional anchors, not borders. Arcs show research relationships—not measured capital flows or risk.</div></div>
+  <aside class="world-inspector"><div class="world-kicker">REGIONAL RESEARCH BRIEF</div><h3 id="worldName">United States</h3><div id="worldChannels" class="world-channels"></div><p class="world-hypothesis">CONDITIONAL RESEARCH FRAMEWORK · NOT A CURRENT FORECAST</p><p id="worldMechanism"></p><p id="worldCheck"></p><div class="world-evidence"><strong id="worldCoverage">Not assessed</strong><div id="worldEvidence"></div><small class="world-date" id="worldAsOf"></small></div></aside></div>
+  <div class="world-region-buttons" id="worldRegions" aria-label="Select world region"></div>
+  <div class="orbit-controls"><button class="secondary" id="worldMotion" aria-pressed="false">Start globe rotation</button><button class="secondary" id="worldReset">US-centered view</button><label>Zoom <input id="worldZoom" type="range" min="75" max="120" value="100"></label></div>
+  <div class="world-bottom">US exposure lens: broad equities · technology · energy · industrials · Treasuries · USD. No directional score is assigned without current evidence. Empty coverage means unknown—not safe.</div>
+ </div>
+ <section aria-label="Pictures and video sources"><div class="eyebrow">VISUAL CONTEXT / SOURCE-OWNED VIDEO</div><h3>See the world behind the headlines.</h3>
+ <div class="visual-library">
+  <figure><a href="https://www.nasa.gov/image-article/blue-marble-image-of-earth-from-apollo-17/" target="_blank" rel="noopener noreferrer"><img class="reference-image" loading="lazy" referrerpolicy="no-referrer" src="https://www.nasa.gov/wp-content/uploads/2023/03/135918main_bm1_high.jpg" alt="Archival Apollo 17 view of Earth, showing Africa and the Arabian Peninsula"></a><figcaption><strong>Earth / global context</strong><br>NASA · Apollo 17 archival photograph. Reference imagery, not current conditions. <a href="https://www.nasa.gov/image-article/blue-marble-image-of-earth-from-apollo-17/" target="_blank" rel="noopener noreferrer">Image credit and original</a></figcaption></figure>
+  <figure><a href="https://science.nasa.gov/resource/earth-at-night/" target="_blank" rel="noopener noreferrer"><img class="reference-image" loading="lazy" referrerpolicy="no-referrer" src="https://assets.science.nasa.gov/content/dam/science/psd/solar/2023/09/3/324350main_11_full.jpg" alt="Archival satellite composite showing city lights across Earth at night"></a><figcaption><strong>Earth at night / geographic context</strong><br>NASA/NOAA · archival composite; source page dated August 7, 2017. Not a current economic-activity measurement. <a href="https://science.nasa.gov/resource/earth-at-night/" target="_blank" rel="noopener noreferrer">Image credit and original</a></figcaption></figure>
+ </div>
+ <div class="video-sources"><a href="https://www.reuters.com/video/" target="_blank" rel="noopener noreferrer">▶ Reuters · world and business videos ↗</a><a href="https://www.federalreserve.gov/videos.htm" target="_blank" rel="noopener noreferrer">▶ Federal Reserve · official videos ↗</a></div>
+ <p class="tiny">These are publisher video libraries, not individual event clips verified in this scan. Open the source and check the recording date, full context and access requirements. No autoplay, embedded tracking player, or automatic video analysis. Pictures load from NASA when viewed; they are not evidence for the regional alerts.</p>
+ </section>
+ <div class="panel-head"><div><div class="eyebrow">MEDIA DESK / CATALYST RESEARCH</div><h2>What changed. Why it might matter.</h2></div><span class="status watch" id="newsState">FEED OFFLINE</span></div>
+ <p class="sub">Editorial reporting, primary announcements, and social discussion stay distinct. Direction is a research hypothesis—not a forecast or trade instruction.</p>
+ <section aria-label="Reviewed scan alerts" style="border:1px solid #4b657c;border-radius:16px;padding:24px;margin:24px 0;background:#0d1625">
+  <div class="eyebrow">REVIEWED WEB SCAN · HB-NEWS-20260917-01 · NOT A LIVE FEED</div>
+  <h3>Four developments to review</h3>
+  <p>Scan completed: <time datetime="2026-09-17T07:00:04Z">17 September 2026 · 07:00:04 UTC</time>. Coverage: selected accessible pages, not all market information. Retrieval is a scan interval, not a synchronized market snapshot.</p>
+  <p id="scanAge" role="status"></p>
+  <div class="controls"><label for="scanPriority">Show</label><select class="select" id="scanPriority"><option value="all">All priorities</option><option value="high">High priority</option><option value="watch">Watch</option></select><button class="secondary" id="scanExport">Export scan record</button></div>
+  <p class="tiny">Priorities are qualitative research judgments, not calibrated probabilities. No current options chain, consensus dataset, or account holdings were checked. Ticker mappings below are exposure hypotheses, not buy signals. Acknowledgment is session-only and does not resolve risk.</p>
+  <div id="scanAlerts"></div>
+  <details open><summary>Coverage failures are alerts, too</summary><p>Retrieved: Federal Reserve statement; Bank of England publication notice; Reuters market and energy reporting; Fox Business coverage. Reddit returned a stale page and was excluded from current sentiment.</p><p>Unavailable in this scan: Yahoo Finance (rate-limited), CNN and CNBC (retrieval blocked), New York Times (retrieval failed). AP, Bloomberg, FT, WSJ, SEC and BLS were not scanned. Bigdata and Massive query tools were not exposed in this session. No bypass or substitute data was used.</p><p>There is no continuous publisher feed or background alert delivery. The refresh control below still requires a deployed news service. This reviewed snapshot remains separate from imports and can become outdated immediately.</p></details>
+ </section>
+ <div class="metrics"><div class="metric"><span class="tiny">Articles loaded</span><b id="newsCount">0</b></div><div class="metric"><span class="tiny">Latest retrieval</span><b id="newsUpdated" style="font-size:14px">Never</b></div></div>
+ <div class="news-toolbar">
+  <div class="control"><label for="newsTicker">Ticker or keyword</label><input id="newsTicker" class="select" placeholder="NVDA, inflation, oil…" maxlength="80"></div>
+  <div class="control"><label for="newsType">Source type</label><select id="newsType" class="select"><option value="all">All sources</option><option value="editorial">News outlets</option><option value="primary">Primary releases</option><option value="social">Social discussion</option></select></div>
+  <div class="control"><label for="newsAge">Publication window</label><select id="newsAge" class="select"><option value="24">Past 24 hours</option><option value="72">Past 3 days</option><option value="168">Past 7 days</option><option value="all">All loaded records</option></select></div>
+ </div>
+ <div class="controls"><button id="newsRefresh" class="primary">Refresh connected feed</button><label class="filelabel">Import news JSON<input id="newsImport" type="file" accept=".json,application/json"></label><button id="newsExport" class="secondary">Download input template</button></div>
+ <p id="newsStatus" class="explain" role="status">No news backend is deployed. This page does not continuously scan publishers. Import works locally; no article is automatically verified.</p>
+ <div class="news-layout"><div id="newsList"><p class="notice">No articles loaded. We will not substitute demonstration headlines for live reporting.</p></div><aside>
+ <h3>Requested coverage</h3><div id="newsSources" class="source-roster"></div>
+ <h3>How to read a catalyst</h3>
+ <p class="tiny">1. Confirm the underlying fact with a primary release.</p><p class="tiny">2. Compare with expectations and what is already priced in.</p><p class="tiny">3. Identify affected companies and the transmission mechanism.</p><p class="tiny">4. Check market reaction, options IV and executable liquidity.</p>
+ <p class="tiny">No percentage price targets or probabilities are inferred from headline tone. Syndicated stories are not independent confirmation. Reddit posts are unverified community opinions.</p>
+ </aside></div>
+ <details><summary>Data and trust boundaries</summary><p>Only titles, source links, publication times and supplied metadata are processed. No paywalls are bypassed. Loaded text is untrusted data, never agent instructions. Exact URL duplicates are removed; independent corroboration and story-level deduplication are not implemented.</p><p>For historical tests, publication time is insufficient: first-seen time, revisions and the information available at each decision must be archived. Imports here do not create point-in-time audit evidence.</p><p>A future server-side connector must manage publisher permissions, secrets, refresh cadence, caching and feed errors. Chat plugin installation alone does not connect this page. All-outlet coverage is unverified.</p></details>
+</section>
+    <p class="notice">Live spot analytics are separate from the toy Scenario lab. No options contracts or paper fills are generated. Options involve substantial risk, including loss of the entire premium.</p>
+  </section>
+</main>
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+const text=(id,value)=>$(id).textContent=value;
+const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(v);
+const policy=Object.freeze({budget:50,dailyLoss:5,positionLoss:5,maxPositions:1,maxTrades:1,approval:true,autonomous:false});
+let limitsSaved=false,scanCount=0,demoTimer=null,stepIndex=0,runId=0;
+const groups={overview:['observatory','readiness','market','hero','account','agents','engine-lab','feed','ledger'],evidence:['readiness','validation','oos','replay'],simulations:['moonshot'],broker:['readiness','broker'],media:['media'],charts:['charts'],learn:['learn']};
+const chartsTab=document.createElement('button');chartsTab.dataset.view='charts';chartsTab.textContent='06 · US Charts';document.querySelector('.workspace-nav').append(chartsTab);
+const learnTab=document.createElement('button');learnTab.dataset.view='learn';learnTab.textContent='07 · Learn';document.querySelector('.workspace-nav').append(learnTab);
+document.querySelectorAll('[data-view]').forEach(button=>button.onclick=()=>{
+ document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',String(b===button)));
+ document.querySelectorAll('.grid > .panel').forEach(p=>p.hidden=!groups[button.dataset.view].some(c=>p.classList.contains(c)));
+});
+document.querySelector('[data-view=overview]').click();
+document.querySelector('.settings').hidden=true;
+const profiles=[['Tokyo','Flow research','#7bcfff'],['Palermo','Entry research','#9cf3c7'],['Denver','Adversarial review','#ff93a4'],['Stockholm','Execution research','#f5d386'],['Professor','Evidence review','#c6adff']];
+$('agents').innerHTML=profiles.map((a,i)=>'<article class="agent" id="a'+i+'" style="--agent:'+a[2]+'"><span class="eyebrow">0'+(i+1)+' / RULE MODULE</span><h3>'+a[0]+'</h3><p>'+a[1]+'</p><span class="score">—</span><span class="state">NO DATA</span></article>').join('');
+function log(name,message){
+ const row=document.createElement('div');row.className='event';
+ [new Date().toISOString().slice(11,19),name,message].forEach((v,i)=>{const node=document.createElement(i===0?'time':'span');node.textContent=v;if(i===2)node.className='message';row.append(node)});
+ $('events').prepend(row);
+}
+function demoStep(){runEngines(true)}
+$('step').onclick=()=>runEngines(true);
+$('toggle').onclick=()=>{enginePaused=!enginePaused;text('toggle',enginePaused?'Resume analytics':'Pause analytics');runEngines(true)};
+$('hero').classList.add('paused');
+$('reset').onclick=()=>{scanCount=0;text('scans',0);log('SYSTEM','Analysis counter reset. Market buffers and session observations retained; evidence unchanged.')};
+log('PROFESSOR','No calibrated model, verified performance, or broker connection. Starter policy is not broker-enforced.');
+$('replayBtn').disabled=true;
+text('replayTitle','Historical backtest not available');
+text('replayExplain','Requires archived contract quotes and reference data, frozen entry/exit rules, source validation and reproducible execution modeling. No fabricated replay will be substituted.');
+const universes={sp:['SPY','SPX'],nasdaq:['QQQ','NDX'],crypto:['BTC','ETH','XRP','SOL']};
+document.querySelectorAll('.tab').forEach(tab=>tab.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active',t===tab));
+ $('asset').replaceChildren(...universes[tab.dataset.u].map(t=>new Option(t,t)));
+ text('universeList','Planned research examples only. Coverage and contract availability unverified: '+universes[tab.dataset.u].join(', '));
+});
+document.querySelector('.tab').click();
+function refreshGates(){
+ const rows=[...document.querySelectorAll('#gateChecklist .checkrow')];
+ rows.forEach((row,i)=>{
+ row.classList.remove('pass');
+ row.querySelector('.checkmark').textContent=i===4&&limitsSaved?'✓':'×';
+ row.querySelector('.checkstate').textContent=i===4&&limitsSaved?'SESSION ACKNOWLEDGMENT':'UNVERIFIED';
+ });
+ text('overallGate','0 VERIFIED EVIDENCE GATES');
+ ['sampleStat','fillStat','shadowStat'].forEach(id=>text(id,'0 VERIFIED'));
+ text('oosStat','UNVERIFIED');text('limitStat',limitsSaved?'ACKNOWLEDGED':'NOT ACKNOWLEDGED');
+ ['sampleBar','fillBar','shadowBar','oosBar'].forEach(id=>{if($(id))$(id).style.width='0%'});
+}
+$('evidenceBtn').onclick=()=>{log('DEMO','Import workflow preview. Zero historical observations added.');refreshGates()};
+$('fillBtn').onclick=()=>{log('DEMO','Paper-fill workflow preview. Zero live trades added.');refreshGates()};
+$('saveLimits').onclick=()=>{
+ const ids=['budget','dailyLoss','positionLoss','maxPositions','maxTrades'];
+ const expected=[50,5,5,1,1];
+ if(!ids.every((id,i)=>Number($(id).value)===expected[i])){text('limitStat','POLICY MISMATCH');limitsSaved=false;return}
+ limitsSaved=true;refreshGates();text('limitBar','');$('limitBar').style.width='100%';
+ log('POLICY','Acknowledged $50 / $5 daily / $5 position / one position / one daily trade. This session only. No broker enforcement.');
+};
+$('readinessBtn').onclick=()=>renderReadiness();
+refreshGates();
+// Deterministic toy sampling. Desired target NEVER influences generated outcomes.
+function rng(seed){let x=seed>>>0;return ()=>{x=(Math.imul(1664525,x)+1013904223)>>>0;return(x+.5)/4294967296}}
+function drawMultiple(random,mode){
+ const configs={extreme:[.50,-.85,1.65],split:[.25,-.45,1.05],discipline:[.05,-.08,.25]};
+ const [zero,mu,sigma]=configs[mode];
+ if(random()<zero)return 0;
+ const z=Math.sqrt(-2*Math.log(random()))*Math.cos(2*Math.PI*random());
+ return Math.exp(mu+sigma*z);
+}
+function simulate(capital,trials,batches,mode,seed){
+ const random=rng(seed),runs=[];
+ for(let b=0;b<batches;b++){const values=[];for(let i=0;i<trials;i++)values.push(capital*drawMultiple(random,mode));runs.push(values)}
+ return runs;
+}
+const seedField=document.createElement('div');seedField.className='control';seedField.innerHTML='<label for="moonSeed">Reproducibility seed</label><input id="moonSeed" class="select" type="number" min="1" max="4294967295" value="1729">';
+$('moonBatches').parentElement.parentElement.append(seedField);
+const assumptions=document.createElement('p');assumptions.className='tiny';assumptions.textContent='Uncalibrated toy assumptions: A = 50% zero mass, log-return μ −0.85 / σ 1.65; B = 25%, −0.45 / 1.05; C = 5%, −0.08 / 0.25. Otherwise lognormal terminal values. No actual contracts, fees, slippage, theta, liquidity, correlations or time paths modeled. Not investment probabilities.';
+$('moonBtn').after(assumptions);
+text('moonExplain','Target-independent toy outcomes. No audited data loaded. Changing the target changes the count of successes, never the sampled values.');
+function updateMoonInputs(){
+ const c=Number($('moonCapital').value),m=Number($('moonTarget').value);
+ text('moonCapitalOut',money(c));text('moonTargetValue',money(c*m));text('moonMaxLoss',money(c));text('moonProfit',money(c*(m-1)));text('moonPaths',(Number($('moonTrials').value)*Number($('moonBatches').value)).toLocaleString());
+}
+['moonCapital','moonTarget','moonTrials','moonBatches'].forEach(id=>$(id).oninput=()=>{updateMoonInputs();text('moonHeadline','Inputs changed · run to update results')});updateMoonInputs();
+$('moonBtn').onclick=()=>{
+ const capital=Number($('moonCapital').value),target=capital*Number($('moonTarget').value),trials=Number($('moonTrials').value),batches=Number($('moonBatches').value),seed=Number($('moonSeed').value);
+ if(!Number.isInteger(seed)||seed<1||seed>4294967295||capital<50||capital>5000){text('moonHeadline','Invalid seed or capital');return}
+ const runs=simulate(capital,trials,batches,$('moonProfile').value,seed),ends=runs.flat().sort((a,b)=>a-b),counts=[0,0,0,0];
+ ends.forEach(v=>counts[v<capital*.05?0:v<capital?1:v<target?2:3]++);
+ const labels=['Loss of >95%','Below starting value','At start–below target','At/above target'];
+ $('simBars').innerHTML=counts.map((n,i)=>'<div class="sim-row"><span>'+labels[i]+'</span><div class="sim-track"><div class="sim-fill" style="width:'+100*n/ends.length+'%;background:'+['#ff93a4','#f5d386','#7bcfff','#9cf3c7'][i]+'"></div></div><b>'+n+'</b></div>').join('');
+ const percentile=q=>ends[Math.floor((ends.length-1)*q)];
+ $('samplePaths').innerHTML=[0,.1,.5,.9,1].map((q,i)=>'<div class="path"><span>'+['MINIMUM','P10','MEDIAN','P90','MAXIMUM'][i]+'</span><b>'+money(percentile(q))+'</b></div>').join('');
+ $('batchGrid').innerHTML=runs.map((values,i)=>'<div class="batch"><span>BATCH '+(i+1)+'</span><b>'+values.filter(v=>v>=target).length+' target hits<br>Mean '+money(values.reduce((a,b)=>a+b,0)/values.length)+'</b></div>').join('');
+ text('moonHeadline',counts[3]+' / '+ends.length+' toy outcomes reach '+money(target));
+ text('moonExplain','Seed '+seed+' · same inputs and seed reproduce identical outcomes. Target selection only changes classification. These are terminal values, not a historical forecast or drawdown calculation. Zero successes do not establish zero real-world probability.');
+ window.lastMoonResults={ends,counts};
+};
+// Summaries are claims, never verified evidence.
+function validateSummary(raw){
+ if(!raw||!Array.isArray(raw.windows)||raw.windows.length!==3)throw Error('Exactly three windows required.');
+ let previous=-Infinity;
+ return raw.windows.map((w,i)=>{
+ const keys=['trainStart','trainEnd','testStart','testEnd'];const dates=keys.map(k=>Date.parse(w[k]));
+ if(!keys.every(k=>typeof w[k]==='string'&&/^\d{4}-\d{2}-\d{2}T/.test(w[k]))||dates.some(d=>!Number.isFinite(d)))throw Error('Window '+(i+1)+': full ISO timestamps required.');
+ if(!(dates[0]<dates[1]&&dates[1]<dates[2]&&dates[2]<dates[3]&&previous<dates[2]))throw Error('Training must precede testing; test windows must be chronological and non-overlapping.');
+ previous=dates[3];
+ for(const k of ['expectancy','drawdown','trades','topTickerPct','regimes'])if(typeof w[k]!=='number'||!Number.isFinite(w[k]))throw Error('Invalid numeric field: '+k);
+ if(w.drawdown<0||w.drawdown>100||w.topTickerPct<0||w.topTickerPct>100||!Number.isInteger(w.trades)||w.trades<0||!Number.isInteger(w.regimes)||w.regimes<0||typeof w.leakage!=='boolean')throw Error('Invalid ranges or types.');
+ return w;
+ });
+}
+function inspect(raw){
+ const windows=validateSummary(raw);
+ const t=['minExpectancy','maxDrawdown','minTrades','maxTicker','minRegimes'].map(id=>Number($(id).value));
+ if(t.some(v=>!Number.isFinite(v))||t[0]<0||t[1]<=0||t[1]>100||t[2]<1||t[3]<=0||t[3]>100||t[4]<1)throw Error('Invalid thresholds.');
+ $('oosWindows').replaceChildren();
+ windows.forEach((w,i)=>{
+ const matches=w.expectancy>t[0]&&w.drawdown<=t[1]&&w.trades>=t[2]&&!w.leakage&&w.topTickerPct<=t[3]&&w.regimes>=t[4];
+ const card=document.createElement('article');card.className='window';
+ const title=document.createElement('h3');title.textContent='Window '+(i+1)+' · UNVERIFIED';
+ const period=document.createElement('p');period.textContent=w.testStart.slice(0,10)+' to '+w.testEnd.slice(0,10);
+ const details=document.createElement('p');details.textContent='Reported expectancy '+money(w.expectancy)+' · drawdown '+w.drawdown+'% · '+w.trades+' trades · top ticker '+w.topTickerPct+'% · '+w.regimes+' regimes.';
+ const status=document.createElement('p');status.textContent=matches?'Reported values meet thresholds. Source and calculations NOT verified.':'Reported values fail one or more thresholds. NOT verified.';
+ card.append(title,period,details,status);$('oosWindows').append(card);
+ });
+ text('oosVerdictBadge','UNVERIFIED SUMMARY');
+ text('oosVerdict','Chronology and field validation completed. Does not establish source authenticity, leakage absence, cost accuracy, equity-path drawdown, or robustness. Gate remains locked.');refreshGates();
+}
+$('oosFile').onchange=async event=>{
+ const id=++runId;
+ $('oosWindows').replaceChildren();text('oosVerdictBadge','UNVERIFIED');refreshGates();
+ try{const file=event.target.files[0];if(!file)return;if(file.size>1048576)throw Error('Maximum summary size is 1 MB.');const raw=JSON.parse(await file.text());if(id!==runId)return;inspect(raw)}
+ catch(e){text('oosVerdict','Import rejected: '+e.message)}
+};
+$('demoOos').onclick=()=>{
+ const windows=[0,1,2].map(i=>({trainStart:'2020-01-01T00:00:00Z',trainEnd:(2022+i)+'-12-31T00:00:00Z',testStart:(2023+i)+'-01-01T00:00:00Z',testEnd:(2023+i)+'-06-30T00:00:00Z',expectancy:i===2?-.3:1,drawdown:10,trades:60,leakage:false,topTickerPct:30,regimes:3}));
+ inspect({windows});text('oosVerdict','Methodology fixture only. One window fails. No data was downloaded; no evidence gate changed.');
+};
+['minExpectancy','maxDrawdown','minTrades','maxTicker','minRegimes'].forEach(id=>$(id).oninput=()=>{$('oosWindows').replaceChildren();text('oosVerdict','Thresholds changed. Reinspect the summary. These criteria are proposals, not statistical proof.');refreshGates()});
+text('oosVerdict','Historical calibration blocked: no verified provider dataset is loaded. Imported summaries never count as audits.');
+
+/* Media Desk: source metadata and research prompts, never execution inputs. */
+const newsSources=[
+ ['Yahoo Finance','finance.yahoo.com','editorial'],['Reddit','reddit.com','social'],
+ ['Fox Business','foxbusiness.com','editorial'],['Fox News','foxnews.com','editorial'],
+ ['CNN','cnn.com','editorial'],['The New York Times','nytimes.com','editorial'],
+ ['Reuters','reuters.com','editorial'],['AP','apnews.com','editorial'],
+ ['CNBC','cnbc.com','editorial'],['Bloomberg','bloomberg.com','editorial'],
+ ['Financial Times','ft.com','editorial'],['Wall Street Journal','wsj.com','editorial'],
+ ['Federal Reserve','federalreserve.gov','primary'],['SEC','sec.gov','primary'],['BLS','bls.gov','primary']
+];
+for(const [name,domain] of newsSources){const d=document.createElement('div'),a=document.createElement('a'),status=document.createElement('small');a.href='https://'+domain;a.textContent=name;a.target='_blank';a.rel='noopener noreferrer';status.textContent='Requested · feed not connected';d.append(a,status);$('newsSources').append(d)}
+let newsRecords=[],newsRequest=0;
+function normalizeNews(raw,now=Date.now()){
+ const list=Array.isArray(raw)?raw:raw&&raw.results;
+ if(!Array.isArray(list)||list.length>1000)throw Error('Provide at most 1,000 records as an array or {results:[…]}.');
+ const seen=new Set(),accepted=[];let rejected=0,duplicates=0;
+ for(const row of list){
+  try{
+   if(!row||typeof row.title!=='string'||!row.title.trim()||row.title.length>1000)throw Error('title');
+   const url=new URL(row.article_url||row.url);
+   if(url.protocol!=='https:'||url.username||url.password)throw Error('url');
+   const published=row.published_utc||row.published_at;
+   if(typeof published!=='string'||!/^\d{4}-\d{2}-\d{2}T/.test(published)||!/(Z|[+-]\d{2}:\d{2})$/.test(published))throw Error('time');
+   const stamp=Date.parse(published);if(!Number.isFinite(stamp)||stamp>now+300000)throw Error('future');
+   url.hash='';for(const key of [...url.searchParams.keys()])if(key.startsWith('utm_'))url.searchParams.delete(key);
+   const key=url.href;if(seen.has(key)){duplicates++;continue}seen.add(key);
+   const host=url.hostname.toLowerCase(),source=newsSources.find(s=>host===s[1]||host.endsWith('.'+s[1]));
+   const tickers=Array.isArray(row.tickers)?row.tickers.filter(x=>typeof x==='string'&&/^[A-Z0-9.:-]{1,20}$/.test(x)).slice(0,30):[];
+   accepted.push({title:row.title.trim(),url:key,host,published:stamp,source:source?source[0]:host,type:source?source[2]:'editorial',tickers,loaded:now});
+  }catch{rejected++}
+ }
+ accepted.sort((a,b)=>b.published-a.published);
+ return {accepted,rejected,duplicates};
+}
+function newsHypothesis(title){
+ const t=title.toLowerCase();
+ // Mechanism prompts are conditional, with no inferred direction from keyword polarity.
+ if(/earnings|guidance|revenue|profit/.test(t))return 'Earnings/guidance: compare reported figures AND forward guidance with consensus. Above-expectation growth may support price; weak guidance or elevated expectations may reverse the reaction. Check IV repricing.';
+ if(/rate|inflation|\bcpi\b|federal reserve/.test(t))return 'Macro/rates: compare the release with consensus and the yield reaction. Valuation and financing effects can conflict with the growth signal; direction is undetermined.';
+ if(/oil|energy|opec/.test(t))return 'Energy: assess supply versus demand. The same oil-price move can affect producers and energy consumers differently. No blanket bullish/bearish call.';
+ if(/tariff|sanction|export|regulat/.test(t))return 'Policy: verify scope, effective date and company exposure. Cost increases and competitive benefits can coexist. Identify affected issuers before inferring direction.';
+ if(/acquisition|merger|buyout/.test(t))return 'Deal: distinguish acquirer from target, price from speculation, and announcement from approval. Assess funding and completion risk.';
+ return 'No reliable direction from this headline alone. Verify the fact, surprise versus expectations, company exposure, time horizon and observed market reaction.';
+}
+function renderNews(){
+ const q=$('newsTicker').value.trim().toLowerCase(),type=$('newsType').value,age=$('newsAge').value;
+ const shown=newsRecords.filter(r=>(type==='all'||r.type===type)&&(age==='all'||Date.now()-r.published<=Number(age)*3600000)&&(!q||(r.title+' '+r.tickers.join(' ')+' '+r.source).toLowerCase().includes(q)));
+ $('newsList').replaceChildren();text('newsCount',newsRecords.length);
+ if(!shown.length){const p=document.createElement('p');p.className='notice';p.textContent='No matching articles. No news is not evidence of no market risk.';$('newsList').append(p);return}
+ for(const r of shown){
+ const card=document.createElement('article');card.className='news-item';
+ const meta=document.createElement('div');meta.className='news-meta';meta.textContent=r.source+' / '+(r.type==='social'?'SOCIAL · UNVERIFIED':r.type==='primary'?'PRIMARY SOURCE · CHECK ORIGINAL':'EDITORIAL · CHECK ORIGINAL')+' / '+new Date(r.published).toISOString();
+ const a=document.createElement('a');a.href=r.url;a.textContent=r.title;a.target='_blank';a.rel='noopener noreferrer';
+ const tickers=document.createElement('p');tickers.textContent='Supplied ticker tags: '+(r.tickers.join(', ')||'none; mapping not inferred')+'.';
+ const hypothesis=document.createElement('p');hypothesis.textContent=(r.type==='social'?'Social sentiment is not a confirmed catalyst. Potential manipulation and repetition must be checked. ':'Conditional research prompt — ')+newsHypothesis(r.title);
+ const caution=document.createElement('p');caution.className='tiny';caution.textContent='Confidence: not calibrated · corroboration: not established · price reaction: not measured · no orders authorized.';
+ card.append(meta,a,tickers,hypothesis,caution);$('newsList').append(card);
+ }
+}
+['newsTicker','newsType','newsAge'].forEach(id=>$(id).oninput=renderNews);
+async function acceptNews(raw,mode){
+ const result=normalizeNews(raw);newsRecords=result.accepted;renderNews();
+ text('newsUpdated',new Date().toISOString());
+ text('newsState',mode==='import'?'IMPORTED SNAPSHOT · NOT LIVE':'CONNECTED SNAPSHOT');
+ text('newsStatus',result.accepted.length+' records loaded; '+result.rejected+' rejected; '+result.duplicates+' exact-link duplicates removed. '+(mode==='import'?'Local import, not independently authenticated.':'One refresh completed; continuous polling is not enabled.')+' No readiness gate changed.');
+}
+$('newsImport').onchange=async e=>{
+ const id=++newsRequest;const f=e.target.files[0];if(!f)return;
+ try{if(f.size>2097152)throw Error('Maximum file size is 2 MB.');const raw=JSON.parse(await f.text());if(id!==newsRequest)return;await acceptNews(raw,'import')}
+ catch(err){text('newsStatus','Import rejected: '+err.message+'. Existing snapshot retained.')}
+};
+$('newsRefresh').onclick=async()=>{
+ if(!/^https?:$/.test(location.protocol)){text('newsState','FEED OFFLINE');text('newsStatus','Live refresh requires a deployed same-origin /api/news service. This standalone file has no news backend. No publisher credentials belong in this page.');return}
+ const id=++newsRequest;
+ try{
+  const response=await fetch('/api/news',{credentials:'same-origin',headers:{Accept:'application/json'},signal:AbortSignal.timeout(10000)});
+  if(!response.ok||!response.headers.get('content-type')?.includes('application/json'))throw Error('News service unavailable');
+  const content=await response.text();if(content.length>2097152)throw Error('Feed response too large');
+  if(id!==newsRequest)return;await acceptNews(JSON.parse(content),'feed');
+ }catch{if(id!==newsRequest)return;text('newsState','FEED OFFLINE');text('newsStatus','Live service unavailable. Last snapshot, if any, is retained with its retrieval timestamp. No automatic retry.')}
+};
+$('newsExport').onclick=()=>{
+ const example={results:[],format:{title:'Article title',article_url:'https://publisher.example/article',published_utc:'YYYY-MM-DDTHH:mm:ssZ',tickers:['NVDA']},note:'Use permitted provider records, not invented headlines. Massive results field names are accepted. Imports are unverified snapshots.'};
+ const blob=new Blob([JSON.stringify(example,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='heartbeat-news-input.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+
+// Analyst-reviewed snapshot. Never accept these provenance labels from arbitrary imports.
+const reviewedScan={id:'HB-NEWS-20260917-01',completed:'2026-09-17T07:00:04Z',mode:'bounded web scan; not live',alerts:[
+ {id:'A1',priority:'high',title:'Interest-rate repricing',source:'Federal Reserve',url:'https://www.federalreserve.gov/newsevents/pressreleases/monetary20260916a.htm',published:'2026-09-16T18:00:00Z',evidence:'Primary release checked. The Fed raised its target range by 0.25 percentage point to 3.75–4.00%.',exposure:'SPY, QQQ, IWM, TLT; BTC/ETH as a possible cross-asset channel.',interpretation:'Higher discount rates can pressure valuations, but a widely anticipated increase may already be priced in. Do not infer a short trade from the announcement alone.',counter:'Reuters reported an Asian equity and US futures rebound after the decision; reaction was not uniformly negative.',counterUrl:'https://www.reuters.com/world/china/global-markets-global-markets-2026-09-17/',next:'Check Treasury yields, equity breadth and fresh options bid/ask plus IV before assessing any entry. No contract-level data was available in this scan.'},
+ {id:'A2',priority:'high',title:'Oil supply and reversal risk',source:'Reuters',url:'https://www.reuters.com/business/energy/oil-prices-extend-losses-fears-middle-east-supply-disruptions-ease-2026-09-17/',published:'2026-09-17; report includes a 06:32 UTC price observation; exact publication time not retained',evidence:'Editorial report checked; underlying supply claims not independently verified. Oil declined on reports of additional Saudi shipments via Oman while regional disruption risks persisted.',exposure:'XLE, XOM, CVX and airline stocks; effects can differ.',interpretation:'Lower fuel costs may help consumers of energy while pressuring producers. Hedging, demand and refining margins can offset these effects.',counter:'A supply headline can reverse quickly; falling oil does not establish that geopolitical risk has ended.',next:'Recheck shipping/supply announcements and executable prices. The article’s price observation is not a streaming quote.'},
+ {id:'A3',priority:'high',title:'Scheduled UK policy event',source:'Bank of England',url:'https://www.bankofengland.co.uk/monetary-policy-summary-and-minutes/2026/september-2026',published:'2026-09-17; publication notice only; intraday publication timestamp unavailable',evidence:'Primary page checked. The September policy release was still pending at this scan; its page advertised publication at 12pm.',exposure:'GBP, UK equities and global rates; indirect US equity exposure.',interpretation:'An unexpected decision or guidance change could move currencies and yields. No decision outcome is included or assumed.',counter:'The policy announcement may match expectations, leaving limited incremental directional information.',next:'Read the actual release after publication; compare decision, vote and guidance with pre-event expectations. No later information was used.'},
+ {id:'A4',priority:'watch',title:'Trade-policy uncertainty',source:'Fox Business',url:'https://www.foxbusiness.com/politics/trump-calls-canadas-potential-eu-associate-membership-laughable-warns-europe-very-heavy-tariffs',published:'2026-09-17T03:57:00Z',evidence:'Fox reports conditional US tariff threats over closer Canada–EU ties.',exposure:'Cross-border manufacturers and importers; issuer-specific exposure not measured.',interpretation:'General policy framework: evaluate legal scope, effective dates and supply-chain exposure before translating rhetoric into an earnings impact.',counter:'A political statement is not proof of an enacted measure. Primary corroboration was not established in this scan.',next:'Watch for official legal notices and company disclosures. Do not turn this report into a confirmed tariff-cost assumption.'}
+]};
+const scanAcknowledged=new Set();
+function renderReviewedScan(){
+ const age=Math.max(0,Date.now()-Date.parse(reviewedScan.completed));
+ text('scanAge','Snapshot age: '+Math.floor(age/60000)+' minutes · '+(age>3600000?'STALE — rescan before relying on it.':'NOT CONTINUOUSLY UPDATED — developments may have changed.'));
+ $('scanAlerts').replaceChildren();
+ reviewedScan.alerts.filter(a=>$('scanPriority').value==='all'||a.priority===$('scanPriority').value).forEach(a=>{
+  const card=document.createElement('article');card.className='news-item';
+  const h=document.createElement('h3');h.textContent=a.priority.toUpperCase()+' · '+a.title;
+  const meta=document.createElement('p');meta.className='news-meta';meta.textContent=a.id+' · '+a.source+' · publication: '+a.published;
+  const link=document.createElement('a');link.href=a.url;link.textContent='Read original source';link.target='_blank';link.rel='noopener noreferrer';card.append(h,meta,link);
+  [['Evidence',a.evidence],['Potential exposure (inference)',a.exposure],['Interpretation (not a prediction)',a.interpretation],['Counterpoint / uncertainty',a.counter],['Next verification',a.next]].forEach(([label,value])=>{const p=document.createElement('p');p.textContent=label+': '+value;card.append(p)});
+  if(a.counterUrl){const c=document.createElement('a');c.href=a.counterUrl;c.textContent='Reported market reaction';c.target='_blank';c.rel='noopener noreferrer';card.append(c)}
+  const b=document.createElement('button');b.className='secondary';b.textContent=scanAcknowledged.has(a.id)?'Acknowledged this session':'Mark reviewed';b.disabled=scanAcknowledged.has(a.id);b.onclick=()=>{scanAcknowledged.add(a.id);renderReviewedScan()};card.append(b);$('scanAlerts').append(card);
+ });
+}
+$('scanPriority').onchange=renderReviewedScan;
+$('scanExport').onclick=()=>{const result={...reviewedScan,coverage:'Fed, BoE, Reuters and Fox reviewed; Reddit stale; Yahoo/CNN/CNBC/NYT unavailable; other outlets not scanned',acknowledgedThisSession:[...scanAcknowledged],warning:'Not a live feed, exhaustive scan, synchronized market snapshot, or historical point-in-time audit.'};const url=URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=reviewedScan.id+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+renderReviewedScan();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderReviewedScan()});
+setInterval(()=>{if(!document.hidden)renderReviewedScan()},60000);
+
+// ENGINE_CORE_BEGIN: pure deterministic functions; no UI, network, or execution.
+const ENGINE_RULES=Object.freeze({version:'HB-SPOT-0.4',bars:21,quoteMaxAge:10000,barMaxAge:90000,rvolAlert:2,spreadAlertBps:10,topLevelWatchUSDT:50});
+function parseClosedBar(row,now=Date.now()){
+ if(!Array.isArray(row)||row.length<11)return null;
+ const indices=[0,1,2,3,4,5,6,7,9];
+ if(indices.some(i=>row[i]===null||row[i]===undefined||String(row[i]).trim()===''||!Number.isFinite(Number(row[i]))))return null;
+ const b={openTime:+row[0],open:+row[1],high:+row[2],low:+row[3],close:+row[4],volume:+row[5],closeTime:+row[6],quoteVolume:+row[7],buyVolume:+row[9]};
+ if(b.openTime%60000!==0||b.closeTime-b.openTime!==59999||b.closeTime>=now||b.openTime<=0||b.low<=0||b.high<Math.max(b.open,b.close)||b.low>Math.min(b.open,b.close)||b.volume<0||b.quoteVolume<0||b.buyVolume<0||b.buyVolume>b.volume)return null;
+ if(b.volume===0&&b.quoteVolume!==0)return null;
+ return b;
+}
+function mergeClosedBars(old,added){const map=new Map(old.map(b=>[b.openTime,b]));for(const b of added)if(!map.has(b.openTime))map.set(b.openTime,b);return [...map.values()].sort((a,b)=>a.openTime-b.openTime).slice(-180)}
+function tokyoEngine(bars){
+ if(bars.length<21)return {status:'WARMUP',rvol:null,buyShare:null,changePct:null,reason:'Needs 21 completed one-minute bars.'};
+ const last=bars.at(-1),prior=bars.slice(-21,-1),mean=prior.reduce((s,b)=>s+b.volume,0)/20;
+ const rvol=mean>0?last.volume/mean:null,buyShare=last.volume>0?last.buyVolume/last.volume:null;
+ return {status:rvol===null?'NO BASELINE':rvol>=ENGINE_RULES.rvolAlert?'VOLUME WATCH':'OBSERVED',rvol,buyShare,changePct:(last.close/last.open-1)*100,reason:'Spot volume only; no options flow or institutional attribution.'};
+}
+function palermoEngine(bars){
+ if(bars.length<21)return {status:'WARMUP',trend:null,sma5:null,sma20:null,atr14:null,vwap20:null,reason:'Needs 21 completed one-minute bars.'};
+ const avg=n=>bars.slice(-n).reduce((s,b)=>s+b.close,0)/n,sma5=avg(5),sma20=avg(20),last20=bars.slice(-20);
+ const tr=bars.slice(-14).map((b,i)=>{const previous=bars[bars.length-15+i].close;return Math.max(b.high-b.low,Math.abs(b.high-previous),Math.abs(b.low-previous))});
+ const volume=last20.reduce((s,b)=>s+b.volume,0),vwap20=volume>0?last20.reduce((s,b)=>s+b.quoteVolume,0)/volume:null;
+ return {status:'OBSERVED',trend:sma5>sma20?'UP':sma5<sma20?'DOWN':'FLAT',sma5,sma20,atr14:tr.reduce((a,b)=>a+b,0)/14,vwap20,reason:'Descriptive underlying structure, not an options entry or target.'};
+}
+function stockholmEngine(q){
+ if(!q)return {status:'NO QUOTE',spreadBps:null,bidNotional:null,askNotional:null,reason:'Waiting for two-sided spot quote.'};
+ const spreadBps=(q.ask-q.bid)/((q.ask+q.bid)/2)*10000;
+ const bidNotional=Number.isFinite(q.bidSize)?q.bid*q.bidSize:null,askNotional=Number.isFinite(q.askSize)?q.ask*q.askSize:null;
+ return {status:bidNotional===null||askNotional===null?'SIZE MISSING':spreadBps>ENGINE_RULES.spreadAlertBps||Math.min(bidNotional,askNotional)<ENGINE_RULES.topLevelWatchUSDT?'LIQUIDITY WATCH':'QUOTED',spreadBps,bidNotional,askNotional,reason:'Top-of-book spot size is not pool depth, a fill guarantee, or options liquidity.'};
+}
+function denverEngine(bars,q,connected,now){
+ const issues=[];if(!connected)issues.push('DISCONNECTED');
+ if(!q)issues.push('QUOTE MISSING');else if(now-q.event>ENGINE_RULES.quoteMaxAge||now-q.received>ENGINE_RULES.quoteMaxAge||q.event>now+5000)issues.push('QUOTE STALE / CLOCK SKEW');
+ if(bars.length<ENGINE_RULES.bars)issues.push('BAR WARMUP');
+ const recent=bars.slice(-21);if(recent.some((b,i)=>b.closeTime>=now||(i>0&&b.openTime-recent[i-1].openTime!==60000)))issues.push('BAR GAP / FUTURE DATA');
+ if(bars.length&&now-bars.at(-1).closeTime>ENGINE_RULES.barMaxAge)issues.push('BARS STALE');
+ return {status:issues.length?'BLOCKED':'SPOT DATA OK',issues,optionsIssues:['Options chain / Greeks / IV absent','Event-risk coverage unverified','Costs and account eligibility unverified','Out-of-sample and paper validation absent']};
+}
+function professorEngine(symbol,t,p,d,s){
+ const usable=d.issues.length===0;
+ return {status:usable?'RESEARCH ONLY':'DATA BLOCKED',optionsDecision:'BLOCKED',summary:!usable?symbol+': cannot interpret the current setup: '+d.issues.join('; ')+'.':symbol+': '+(t.rvol===null?'no volume baseline':t.rvol.toFixed(2)+'× recent spot volume')+', '+p.trend+' SMA structure, '+s.spreadBps.toFixed(2)+' bps quoted spread. '+(t.status==='VOLUME WATCH'?'Inspect the volume change; it does not imply buying pressure. ':'No volume threshold alert. ')+'Options decision blocked: contract and validation inputs are missing.',reason:'Rule-based report; no model API call, recommendation, or execution.'};
+}
+function evaluateEngines(symbol,bars,q,connected,now){
+ const closed=bars.filter(b=>b.closeTime<now),denver=denverEngine(bars,q,connected,now),tokyo=tokyoEngine(closed),palermo=palermoEngine(closed),stockholm=stockholmEngine(q);
+ return {version:ENGINE_RULES.version,symbol,asOf:new Date(now).toISOString(),barCount:closed.length,tokyo,palermo,denver,stockholm,professor:professorEngine(symbol,tokyo,palermo,denver,stockholm)};
+}
+// ENGINE_CORE_END
+// COMMS_CORE_BEGIN
+function peerReview(receiver,payload){
+ const t=payload.tokyo,p=payload.palermo,d=payload.denver,s=payload.stockholm;
+ const liquidityConcern=s.status!=='QUOTED';
+ const reviews=[
+  'Flow cross-check: '+(t.rvol>=2?'volume threshold reached':'volume below alert threshold')+'; Palermo trend '+p.trend+'. Volume alone does not establish direction.',
+  'Structure cross-check: Tokyo relative volume '+t.rvol.toFixed(2)+'×; Stockholm spread '+s.spreadBps.toFixed(2)+' bps. No options entry can be approved.',
+  'Challenge: '+d.optionsIssues.join('; ')+'. '+(liquidityConcern?'Liquidity output also requires review.':'Spot liquidity label does not establish options liquidity.'),
+  'Execution cross-check: Denver '+d.status+'; '+s.spreadBps.toFixed(2)+' bps quoted spread. '+(t.rvol>=2?'Elevated volume is not guaranteed executable depth.':'Top-of-book sizes do not guarantee fills.'),
+  'Synthesis: flow '+t.rvol.toFixed(2)+'×, trend '+p.trend+', spread '+s.spreadBps.toFixed(2)+' bps. '+(liquidityConcern?'Liquidity concern retained. ':'')+'Options BLOCKED; missing contract and validation evidence.'
+ ];return {receiver,review:reviews[receiver],optionsDecision:'BLOCKED'};
+}
+function exchangeEngineMessages(result,cycleId,now){
+ const outputs=[result.tokyo,result.palermo,result.denver,result.stockholm,result.professor];
+ const inboxes=Array.from({length:5},()=>[]),messages=[];
+ for(let from=0;from<5;from++)for(let to=0;to<5;to++)if(from!==to){
+  const message={id:cycleId+'-'+from+'-'+to,cycleId,symbol:result.symbol,from,to,sentAt:new Date(now).toISOString(),observedAt:result.asOf,kind:from===2?'CHALLENGE':from===4?'OVERSIGHT':'OBSERVATION',payload:JSON.parse(JSON.stringify(outputs[from]))};
+  inboxes[to].push(message);messages.push(message);
+ }
+ // Each recipient consumes its own output and the four delivered peer payloads.
+ const names=['tokyo','palermo','denver','stockholm','professor'];
+ const reviews=inboxes.map((inbox,to)=>{const combined={[names[to]]:outputs[to]};inbox.forEach(m=>combined[names[m.from]]=m.payload);return peerReview(to,combined)});
+ messages.forEach(m=>{m.receivedAt=new Date(now).toISOString();m.receipt={...reviews[m.to],inboxCount:inboxes[m.to].length};});
+ return {messages,reviews};
+}
+// COMMS_CORE_END
+const engineMessages=[],peerCycles=new Map();let peerSequence=0;
+function publishPeerCycle(result,now){
+ const q=marketQuotes.get(result.symbol),bars=engineBars.get(result.symbol)||[],previous=peerCycles.get(result.symbol);
+ if(enginePaused||!marketConnected||!q||result.denver.issues.length||![result.tokyo.rvol,result.palermo.sma5,result.palermo.sma20,result.palermo.atr14,result.palermo.vwap20,result.stockholm.spreadBps,result.stockholm.bidNotional,result.stockholm.askNotional].every(Number.isFinite))return;
+ const signature=q.event+':'+bars.at(-1)?.closeTime;
+ if(previous&&(now-previous.at<10000||previous.signature===signature))return;
+ const batch=exchangeEngineMessages(result,'HB-COMMS-'+(++peerSequence),now);
+ engineMessages.push(...batch.messages);if(engineMessages.length>800)engineMessages.splice(0,engineMessages.length-800);
+ peerCycles.set(result.symbol,{at:now,signature,reviews:batch.reviews});
+}
+const engineBars=new Map(),engineSeedStatus=new Map(),engineSnapshots=[];
+let enginePaused=false,engineLastRun=0,engineLastRecord=0,engineSeedController=null,engineLastSuccess=0;
+let latestEngineResults=[];
+const engineFormat=(v,d=3)=>v===null||v===undefined?'—':Number(v).toFixed(d);
+function runEngines(force=false){
+ const now=Date.now();if(!force&&now-engineLastRun<1000)return;engineLastRun=now;
+ const selected=$('engineSymbol').value;
+ const data=marketSymbols.map(symbol=>evaluateEngines(symbol,engineBars.get(symbol)||[],marketQuotes.get(symbol),marketConnected,now));latestEngineResults=data;
+ const result=data.find(r=>r.symbol===selected);
+ text('engineStatus',enginePaused?'PAUSED · OBSERVATIONS NOT UPDATED':result.professor.status);
+ if(enginePaused){text('engineSummary','Analytics paused. Values below are previous observations, not current signals. Resume to update.');document.querySelectorAll('.agent .state').forEach(n=>n.textContent='PAUSED');document.querySelectorAll('.agent').forEach(n=>n.classList.remove('active'));renderReadiness();return}
+ text('engineSummary',result.professor.summary);text('cycle','SPOT ANALYTICS · OPTIONS BLOCKED');text('candidates','0');
+ const q=marketQuotes.get(selected),bars=engineBars.get(selected)||[];
+ text('engineInputs',selected+' · quote event: '+(q?new Date(q.event).toISOString():'none')+' · latest completed bar: '+(bars.length?new Date(bars.at(-1).closeTime).toISOString():'none')+' · history seed: '+(engineSeedStatus.get(selected)||'not requested')+' · evaluated: '+result.asOf);
+ const valid=result.denver.issues.length===0;
+ const outputs=[result.tokyo,result.palermo,result.denver,result.stockholm,result.professor];
+ const metrics=[engineFormat(result.tokyo.rvol,2)+'×',result.palermo.trend||'—',valid?'OK':'STOP',engineFormat(result.stockholm.spreadBps,2)+' bp','LOCKED'];
+ $('engineDetails').replaceChildren();
+ outputs.forEach((out,i)=>{
+  const card=$('a'+i);card.querySelector('.score').textContent=metrics[i];card.querySelector('.score').style.fontSize='24px';card.querySelector('.state').textContent=!valid&&i!==2&&i!==4?'DATA BLOCKED':out.status;card.classList.toggle('active',valid);
+  const section=document.createElement('article');section.className='news-item';const h=document.createElement('h3');h.textContent=profiles[i][0];const p=document.createElement('p');
+  const messages=[
+   'Relative volume '+engineFormat(result.tokyo.rvol,2)+'×; taker-buy share '+(result.tokyo.buyShare===null?'—':engineFormat(result.tokyo.buyShare*100,1)+'%')+'; closed-bar change '+engineFormat(result.tokyo.changePct)+'%.',
+   'SMA5 '+engineFormat(result.palermo.sma5)+' / SMA20 '+engineFormat(result.palermo.sma20)+'; ATR14 (simple) '+engineFormat(result.palermo.atr14)+' USDT; VWAP20 '+engineFormat(result.palermo.vwap20)+' USDT.',
+   'Spot checks: '+(result.denver.issues.join('; ')||'fresh and contiguous')+'. Options blockers: '+result.denver.optionsIssues.join('; ')+'.',
+   'Spread '+engineFormat(result.stockholm.spreadBps,2)+' bps; quoted bid '+engineFormat(result.stockholm.bidNotional,2)+' / ask '+engineFormat(result.stockholm.askNotional,2)+' USDT. '+result.stockholm.reason,
+   result.professor.summary+' '+result.professor.reason
+  ];p.textContent=(!valid&&i!==2?'Not actionable; inputs stale, incomplete or disconnected. ':'')+messages[i];section.append(h,p);$('engineDetails').append(section);
+ });
+ $('engineTable').replaceChildren();for(const r of data){const tr=document.createElement('tr');[r.symbol,r.barCount,engineFormat(r.tokyo.rvol,2),r.palermo.trend||'—',engineFormat(r.stockholm.spreadBps,2),r.denver.status,'BLOCKED'].forEach(v=>{const td=document.createElement('td');td.textContent=v;tr.append(td)});$('engineTable').append(tr)}
+ if(marketConnected&&(force||now-engineLastRecord>=60000)){
+  engineLastRecord=now;scanCount++;text('scans',scanCount);
+  engineSnapshots.push({result,quote:q?{...q}:null,bars:bars.slice(-21).map(b=>({...b})),connected:marketConnected});if(engineSnapshots.length>300)engineSnapshots.shift();
+  log('PROFESSOR',result.professor.summary);while($('events').children.length>200)$('events').lastElementChild.remove();
+ }
+ engineLastSuccess=now;data.forEach(r=>publishPeerCycle(r,now));renderReadiness();
+}
+async function seedEngineBars(socket){
+ const controller=new AbortController();engineSeedController=controller;const timeout=setTimeout(()=>controller.abort(),12000);
+ await Promise.all(marketSymbols.map(async symbol=>{
+  engineSeedStatus.set(symbol,'loading');
+  try{const response=await fetch('https://data-api.binance.vision/api/v3/klines?symbol='+symbol+'&interval=1m&limit=120',{signal:controller.signal,credentials:'omit'});if(!response.ok)throw Error('HTTP '+response.status);const rows=await response.json();if(!Array.isArray(rows))throw Error('Invalid response');if(marketSocket!==socket)return;
+   const closed=rows.map(r=>parseClosedBar(r)).filter(Boolean);engineBars.set(symbol,mergeClosedBars(engineBars.get(symbol)||[],closed));engineSeedStatus.set(symbol,closed.length+' closed bars received');
+  }catch(e){if(marketSocket===socket)engineSeedStatus.set(symbol,'unavailable ('+e.message+'); waiting for live closed bars')}
+ }));clearTimeout(timeout);if(marketSocket===socket)runEngines(true);
+}
+$('engineSymbol').onchange=()=>runEngines(true);
+$('engineExport').onclick=()=>{runEngines(true);const payload={rules:ENGINE_RULES,exported:new Date().toISOString(),paused:enginePaused,results:latestEngineResults,snapshots:engineSnapshots,quotes:[...marketQuotes.values()],bars:Object.fromEntries(engineBars),seedStatus:Object.fromEntries(engineSeedStatus),warning:'Session observations, not immutable audit evidence, paper fills, or trade approvals.'};const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='heartbeat-spot-analysis.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+
+// Public spot quotes are deliberately isolated from simulation and evidence state.
+const marketSymbols=['BTCUSDT','ETHUSDT','XRPUSDT','SOLUSDT'];
+const marketQuotes=new Map();
+let marketSocket=null,marketClock=null,marketDeadline=null,marketConnected=false;
+function parseMarketTicker(d,now=Date.now()){
+ if(!d||d.e!=='24hrTicker'||!marketSymbols.includes(d.s))return null;
+ const size=v=>v!==null&&v!==undefined&&String(v).trim()!==''&&Number.isFinite(+v)&&+v>=0?+v:null;
+ const q={symbol:d.s,event:Number(d.E),last:Number(d.c),bid:Number(d.b),ask:Number(d.a),change:Number(d.P),volume:Number(d.v),bidSize:size(d.B),askSize:size(d.A),received:now};
+ if(['E','c','b','a','P','v'].some(k=>d[k]===null||d[k]===undefined||String(d[k]).trim()===''))return null;
+ if(!Object.values(q).filter(v=>typeof v==='number').every(Number.isFinite)||q.last<=0||q.bid<=0||q.ask<q.bid||q.volume<0||q.event<=0||q.event>now+5000)return null;
+ return q;
+}
+function renderMarket(){
+ const now=Date.now();$('marketRows').replaceChildren();let fresh=0;
+ const fmt=n=>new Intl.NumberFormat('en-US',{maximumFractionDigits:4}).format(n);
+ for(const symbol of marketSymbols){
+  const q=marketQuotes.get(symbol),row=document.createElement('tr');
+  const age=q?Math.max(0,now-q.event):null;
+  const current=q&&marketConnected&&age<=10000&&now-q.received<=10000;
+  if(current)fresh++;
+  const values=q?[symbol.replace('USDT',' / USDT'),fmt(q.last),fmt(q.bid)+' / '+fmt(q.ask),q.change.toFixed(2)+'%',fmt(q.volume),new Date(q.event).toISOString(),Math.floor(age/1000)+'s · '+(current?'STREAMING':'STALE / DISCONNECTED')]:[symbol.replace('USDT',' / USDT'),'—','—','—','—','—','WAITING'];
+  values.forEach(v=>{const cell=document.createElement('td');cell.textContent=v;row.append(cell)});$('marketRows').append(row);
+ }
+ if(marketConnected)text('marketStatus',fresh===marketSymbols.length?'STREAMING · '+fresh+' / '+marketSymbols.length:fresh?'PARTIAL · '+fresh+' / '+marketSymbols.length:'WAITING / STALE');
+ runEngines();
+}
+function stopMarket(message='Disconnected. Last received values, if any, are stale.'){
+ clearTimeout(marketDeadline);clearInterval(marketClock);marketConnected=false;
+ if(engineSeedController)engineSeedController.abort();
+ const socket=marketSocket;marketSocket=null;if(socket)socket.close();
+ text('marketStatus','DISCONNECTED');text('marketNote',message);$('marketConnect').disabled=false;renderMarket();runEngines(true);
+}
+function connectMarket(){
+ stopMarket();text('marketStatus','CONNECTING');text('marketNote','Connecting to Binance public spot data. No credentials or trading permissions are sent.');$('marketConnect').disabled=true;
+ let socket;
+ try{socket=new WebSocket('wss://data-stream.binance.vision:443/stream?streams='+marketSymbols.flatMap(s=>[s.toLowerCase()+'@ticker',s.toLowerCase()+'@kline_1m']).join('/'));marketSocket=socket;}
+ catch{stopMarket('Connection unavailable in this browser. No synthetic prices substituted.');return}
+ marketDeadline=setTimeout(()=>{if(marketSocket===socket)stopMarket('No valid data received within 15 seconds. Browser, network, or regional restrictions may apply. No automatic retries or alternate routes.');},15000);
+ socket.onopen=()=>{if(marketSocket!==socket)return;marketConnected=true;marketClock=setInterval(renderMarket,1000);renderMarket();seedEngineBars(socket)};
+ socket.onmessage=event=>{
+  if(marketSocket!==socket)return;
+  try{const d=JSON.parse(event.data).data;
+   if(d?.e==='kline'&&marketSymbols.includes(d.s)&&d.k?.i==='1m'&&d.k.x===true){const k=d.k,b=parseClosedBar([k.t,k.o,k.h,k.l,k.c,k.v,k.T,k.q,k.n,k.V,k.Q]);if(b){engineBars.set(d.s,mergeClosedBars(engineBars.get(d.s)||[],[b]));runEngines(true)}return}
+   const q=parseMarketTicker(d);if(!q)return;const old=marketQuotes.get(q.symbol);if(old&&q.event<=old.event)return;marketQuotes.set(q.symbol,q);clearTimeout(marketDeadline);text('marketNote','Receiving spot quotes and completed one-minute candles. Five rule engines analyze these inputs; options decisions remain blocked. No automatic reconnect.');renderMarket()
+  }catch{/* malformed input cannot update prices */}
+ };
+ socket.onerror=()=>{if(marketSocket===socket)stopMarket('Feed connection failed. Browser, network, or regional restrictions may apply. No fabricated fallback prices.');};
+ socket.onclose=()=>{if(marketSocket===socket)stopMarket('Feed closed. Click Connect prices to reconnect; no background retry is running.');};
+}
+$('marketConnect').onclick=connectMarket;$('marketStop').onclick=()=>stopMarket();
+// READINESS_CORE_BEGIN
+function computeReadiness({symbols,quotes,bars,results,connected,paused,lastSuccess,acknowledged,now}){
+ const engineAge=Number.isFinite(lastSuccess)&&lastSuccess>0?now-lastSuccess:null;
+ const pairs=symbols.map(symbol=>{
+  const q=quotes.get(symbol),b=bars.get(symbol)||[],r=results.find(x=>x.symbol===symbol);
+  const d=denverEngine(b,q,connected,now),blockers=[...d.issues];
+  if(paused)blockers.push('ANALYTICS PAUSED');
+  const resultTime=r?Date.parse(r.asOf):NaN,resultAge=Number.isFinite(resultTime)?now-resultTime:null;
+  if(engineAge===null||engineAge<0||engineAge>3000||resultAge===null||resultAge<0||resultAge>3000)blockers.push('ENGINE RESULTS MISSING / STALE');
+  if(!q||![q.event,q.received,q.bid,q.ask,q.last].every(Number.isFinite)||q.bid<=0||q.ask<q.bid||q.last<=0||q.received>now+5000)blockers.push('INVALID / MISSING QUOTE');
+  const complete=r&&r.tokyo&&r.palermo&&r.denver&&r.stockholm&&r.professor&&
+   [r.tokyo.rvol,r.tokyo.buyShare,r.palermo.sma5,r.palermo.sma20,r.palermo.atr14,r.palermo.vwap20,r.stockholm.spreadBps,r.stockholm.bidNotional,r.stockholm.askNotional].every(Number.isFinite)&&
+   r.denver.status==='SPOT DATA OK'&&r.professor.status==='RESEARCH ONLY';
+  if(!complete)blockers.push('FIVE-ENGINE OUTPUT INCOMPLETE / BLOCKED');
+  return {symbol,ready:blockers.length===0,quoteEvent:q?.event??null,quoteReceived:q?.received??null,quoteAgeMs:q?now-q.event:null,latestBarClose:b.at(-1)?.closeTime??null,barAgeMs:b.length?now-b.at(-1).closeTime:null,bars:b.length,resultAgeMs:resultAge,blockers:[...new Set(blockers)]};
+ });
+ const readyCount=pairs.filter(p=>p.ready).length;
+ const researchReady=symbols.length>0&&readyCount===symbols.length;
+ return {checkedAt:new Date(now).toISOString(),scope:'Local browser diagnostics; not trade authorization',researchReady,researchStatus:paused?'PAUSED':researchReady?'SPOT RESEARCH READY':readyCount?'PARTIAL SPOT COVERAGE':'SPOT RESEARCH BLOCKED',readyCount,total:symbols.length,connected,engineAgeMs:engineAge,pairs,policyAcknowledged:acknowledged,policyEnforced:false,tradingReady:false,verifiedEvidenceSource:'NOT CONNECTED',tradingBlockers:['Historical evidence not verifiable here (target 300)','Three chronological out-of-sample windows not verified','Live paper-trade evidence not verifiable here (target 100)','Shadow-account decisions not verifiable here (target 50)','Options market data and account eligibility missing','Durable loss limits and kill-switch enforcement absent','Broker execution connector absent']};
+}
+// READINESS_CORE_END
+function renderReadiness(){
+ const state=computeReadiness({symbols:marketSymbols,quotes:marketQuotes,bars:engineBars,results:latestEngineResults,connected:marketConnected,paused:enginePaused,lastSuccess:engineLastSuccess,acknowledged:limitsSaved,now:Date.now()});
+ text('readinessResearch',state.researchStatus);$('readinessResearch').style.color=state.researchReady?'#9cf3c7':'#f5d386';
+ text('readinessChecked','Evaluated '+state.checkedAt+' · rechecks every second while active');
+ text('readinessPairs',state.readyCount+' / '+state.total);
+ text('readinessExplanation',state.researchReady?'All tracked pairs currently satisfy the spot data and engine-health checks. This is not a trading signal or validation pass.':'Some or all spot research inputs are not ready. See exact blockers below.');
+ text('readinessPolicy','Starter policy: '+(state.policyAcknowledged?'acknowledged in this session':'not acknowledged')+' · server enforcement: ABSENT.');
+ text('readinessText',state.checkedAt+' · '+state.researchStatus+' ('+state.readyCount+'/'+state.total+'). TRADING LOCKED: '+state.tradingBlockers.join('; ')+'.');
+ $('readinessRows').replaceChildren();const age=v=>v===null||!Number.isFinite(v)?'—':(v/1000).toFixed(1)+'s';
+ state.pairs.forEach(p=>{const tr=document.createElement('tr');[p.symbol,age(p.quoteAgeMs),age(p.barAgeMs),p.bars,age(p.resultAgeMs),p.blockers.join('; ')||'NONE · SPOT RESEARCH ONLY'].forEach(value=>{const td=document.createElement('td');td.textContent=value;tr.append(td)});$('readinessRows').append(tr)});
+ return state;
+}
+$('readinessRefresh').onclick=renderReadiness;
+$('readinessExport').onclick=()=>{const state=renderReadiness();const url=URL.createObjectURL(new Blob([JSON.stringify(state,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='heartbeat-readiness.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+setInterval(renderReadiness,1000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)renderReadiness()});
+window.addEventListener('pagehide',()=>stopMarket());
+renderMarket();
+// Interactive perspective projection of the existing research-engine topology.
+// Camera motion never changes inputs, scores, readiness, or evidence counts.
+(()=>{
+ const canvas=$('orbitCanvas'),ctx=canvas.getContext('2d');
+ let yaw=.25,pitch=.38,zoom=1,selected=0,rotating=false,drag=null,hits=[],lastFrame=0,selectedMessage=null,lastCommsKey='';
+ const motionPreference=window.matchMedia('(prefers-reduced-motion: reduce)');
+ const positions=[[-1.15,0,-.55],[.05,0,-1.15],[1.1,0,-.25],[.7,0,1],[-.8,0,.95]];
+ const keys=['tokyo','palermo','denver','stockholm','professor'];
+ profiles.forEach((p,i)=>{const b=document.createElement('button');b.textContent=p[0];b.type='button';b.setAttribute('aria-pressed',String(i===0));b.onclick=()=>{selected=i;update()};$('orbitAgents').append(b)});
+ function project(v,w,h){const x=v[0]*Math.cos(yaw)-v[2]*Math.sin(yaw),z=v[0]*Math.sin(yaw)+v[2]*Math.cos(yaw),y=v[1]*Math.cos(pitch)-z*Math.sin(pitch),depth=v[1]*Math.sin(pitch)+z*Math.cos(pitch),scale=3.8/(3.8+depth);const unit=Math.min(w/4.3,h/3.4)*zoom;return{x:w/2+x*unit*scale,y:h/2+y*unit*scale,z:depth,scale}}
+ function draw(){
+  if(!ctx||canvas.closest('.observatory').hidden)return;
+  const rect=canvas.getBoundingClientRect(),w=rect.width,h=rect.height;if(!w||!h)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  function path(points,color,width=1){ctx.beginPath();points.forEach((p,i)=>{const s=project(p,w,h);i?ctx.lineTo(s.x,s.y):ctx.moveTo(s.x,s.y)});ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()}
+  for(let i=-4;i<=4;i++){path([[i*.4,.45,-1.6],[i*.4,.45,1.6]],'#203b4b66');path([[-1.6,.45,i*.4],[1.6,.45,i*.4]],'#203b4b66')}
+  const ring=[];for(let i=0;i<=96;i++){const a=i/96*Math.PI*2;ring.push([1.5*Math.cos(a),0,1.5*Math.sin(a)])}path(ring,'#45647788');
+  const hub=[0,-.65,0];positions.forEach((p,i)=>path([p,hub],'#284353',1));
+  const cycle=peerCycles.get($('orbitSymbol').value),now=Date.now(),active=cycle&&now-cycle.at<3000&&!enginePaused&&marketConnected;
+  const chosenMessage=engineMessages.find(m=>m.id===selectedMessage&&m.symbol===$('orbitSymbol').value);
+  for(let from=0;from<5;from++)for(let to=from+1;to<5;to++){
+   const highlighted=chosenMessage&&((chosenMessage.from===from&&chosenMessage.to===to)||(chosenMessage.from===to&&chosenMessage.to===from));
+   path([positions[from],positions[to]],highlighted?'#ffffff':active?profiles[from][2]:'#263e50',highlighted?2.5:1);
+  }
+  if(active&&!motionPreference.matches){
+   const progress=(now-cycle.at)/3000;
+   for(let from=0;from<5;from++)for(let to=0;to<5;to++)if(from!==to){const a=positions[from],b=positions[to],v=a.map((x,j)=>x+(b[j]-x)*progress);const p=project(v,w,h);ctx.fillStyle=profiles[from][2];ctx.beginPath();ctx.arc(p.x,p.y,3,0,Math.PI*2);ctx.fill()}
+  }
+  const center=project(hub,w,h);ctx.fillStyle='#0a2030';ctx.strokeStyle='#6a98b1';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(center.x,center.y,32,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.fillStyle='#d4e8f3';ctx.font='600 12px system-ui';ctx.textAlign='center';ctx.fillText('INPUTS',center.x,center.y+4);
+  hits=positions.map((v,i)=>({...project(v,w,h),i})).sort((a,b)=>b.z-a.z);
+  for(const n of hits){const color=profiles[n.i][2],r=(n.i===selected?19:13)*n.scale;ctx.shadowBlur=n.i===selected?22:0;ctx.shadowColor=color;ctx.fillStyle='#0b202e';ctx.strokeStyle=color;ctx.lineWidth=n.i===selected?3:1.5;ctx.beginPath();ctx.arc(n.x,n.y,r,0,Math.PI*2);ctx.fill();ctx.stroke();ctx.shadowBlur=0;ctx.fillStyle=color;ctx.beginPath();ctx.arc(n.x,n.y,4,0,Math.PI*2);ctx.fill();ctx.font='600 14px system-ui';ctx.fillStyle='#ecf4fa';ctx.fillText(profiles[n.i][0],n.x,n.y+r+22)}
+ }
+ function update(){
+  renderComms();
+  const symbol=$('orbitSymbol').value,r=latestEngineResults.find(v=>v.symbol===symbol),q=marketQuotes.get(symbol),now=Date.now();
+  const fresh=!!q&&marketConnected&&now-q.received<=10000&&now-q.event<=10000;
+  const usable=!!r&&fresh&&!enginePaused&&now-engineLastSuccess<=3000&&r.denver.issues.length===0;
+  text('orbitFeed',enginePaused?'ANALYTICS PAUSED':fresh?'SPOT QUOTES FRESH · '+symbol:'FEED DISCONNECTED / STALE · '+symbol);
+  text('orbitName',profiles[selected][0]);text('orbitRole',profiles[selected][1]);$('orbitMetric').style.color=profiles[selected][2];
+  const metrics=r?[engineFormat(r.tokyo.rvol,2)+'×',r.palermo.trend||'—',usable?'OK':'STOP',engineFormat(r.stockholm.spreadBps,2)+' bp','LOCKED']:['—','—','STOP','—','LOCKED'];
+  text('orbitMetric',metrics[selected]);text('orbitStatus',!r?'NO DATA':enginePaused?'PAUSED · LAST OBSERVATION':!usable?'DATA BLOCKED':r[keys[selected]].status);
+  const descriptions=r?[
+   'Volume relative to the preceding 20 completed one-minute bars. Taker-buy share: '+(r.tokyo.buyShare===null?'unavailable':engineFormat(r.tokyo.buyShare*100,1)+'%')+'. Not evidence of institutional options flow.',
+   'SMA5 '+engineFormat(r.palermo.sma5)+' / SMA20 '+engineFormat(r.palermo.sma20)+'. ATR14 '+engineFormat(r.palermo.atr14)+' USDT. Descriptive structure, not an entry recommendation.',
+   'Input checks: '+(r.denver.issues.join('; ')||'passed at observation time')+'. Options, event-risk and validation evidence remain missing.',
+   'Quoted top-of-book spread, not guaranteed fill cost. Bid notional '+engineFormat(r.stockholm.bidNotional,2)+' / ask '+engineFormat(r.stockholm.askNotional,2)+' USDT. No options depth.',
+   r.professor.summary+' Deterministic summary; no language-model call.'
+  ]:[];
+  text('orbitDetail',r?(!usable?'Previous or incomplete observation — not current actionable research. ':'')+descriptions[selected]:'Connect prices to load quotes and completed candles. No demonstration values are substituted.');
+  text('orbitStamp',r?'Observation · '+r.asOf:'No observation yet');
+  [...$('orbitAgents').children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===selected)));draw();
+ }
+ function motion(value){rotating=value;$('orbitMotion').textContent=value?'Pause rotation':'Start rotation';$('orbitMotion').setAttribute('aria-pressed',String(value));lastFrame=0}
+ $('orbitMotion').onclick=()=>motion(!rotating);motionPreference.addEventListener('change',e=>{if(e.matches)motion(false)});
+ $('orbitReset').onclick=()=>{yaw=.25;pitch=.38;zoom=1;$('orbitZoom').value=100;motion(false);draw()};
+ $('orbitZoom').oninput=e=>{zoom=Number(e.target.value)/100;draw()};
+ $('orbitSymbol').onchange=()=>{$('engineSymbol').value=$('orbitSymbol').value;runEngines(true);update()};
+ $('engineSymbol').addEventListener('change',()=>{$('orbitSymbol').value=$('engineSymbol').value;update()});
+ $('orbitConnect').onclick=()=>{$('marketConnect').click();update()};
+ canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,startX:e.clientX,startY:e.clientY};motion(false);canvas.setPointerCapture(e.pointerId)});
+ canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.008;pitch=Math.max(-.7,Math.min(1.1,pitch+(e.clientY-drag.y)*.004));drag.x=e.clientX;drag.y=e.clientY;draw()});
+ canvas.addEventListener('pointerup',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.startX,e.clientY-drag.startY)<8){const rect=canvas.getBoundingClientRect();const hit=[...hits].reverse().find(n=>Math.hypot(e.clientX-rect.left-n.x,e.clientY-rect.top-n.y)<30*n.scale);if(hit)selected=hit.i}drag=null;update()});
+ canvas.addEventListener('pointercancel',()=>{drag=null});
+ canvas.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();motion(false);if(e.key==='ArrowLeft')yaw-=.12;if(e.key==='ArrowRight')yaw+=.12;if(e.key==='ArrowUp')pitch=Math.min(1.1,pitch+.08);if(e.key==='ArrowDown')pitch=Math.max(-.7,pitch-.08);draw()});
+ new ResizeObserver(draw).observe(canvas);setInterval(update,1000);
+ function renderComms(){
+  const symbol=$('orbitSymbol').value,cycle=peerCycles.get(symbol),now=Date.now(),q=marketQuotes.get(symbol);
+  const available=marketConnected&&!enginePaused&&q&&now-q.received<=10000&&now-q.event<=10000&&now-engineLastSuccess<=3000;
+  text('commsStatus',enginePaused?'PAUSED · no new messages':!available?'WAITING FOR FRESH INPUTS · retained messages are historical':cycle?'Last peer exchange '+new Date(cycle.at).toISOString()+' · 20 deliveries / 5 recipient reviews · '+symbol:'Waiting for complete inputs · no messages yet');
+  const list=engineMessages.filter(m=>m.symbol===symbol&&($('commsFilter').value!=='selected'||m.from===selected||m.to===selected)).slice(-40).reverse();
+  const key=symbol+':'+selected+':'+$('commsFilter').value+':'+(list[0]?.id||'empty');if(key===lastCommsKey)return;lastCommsKey=key;
+  $('commsList').replaceChildren();
+  if(!list.length){const p=document.createElement('p');p.textContent='No delivered messages for this selection. Connect prices and wait for valid candles.';$('commsList').append(p)}
+  list.forEach(m=>{const b=document.createElement('button');b.type='button';b.textContent=m.sentAt.slice(11,19)+' · '+profiles[m.from][0]+' → '+profiles[m.to][0]+' · '+m.kind;b.setAttribute('aria-pressed',String(m.id===selectedMessage));b.onclick=()=>{selectedMessage=m.id;text('commsDetail',JSON.stringify(m,null,2));lastCommsKey='';renderComms();draw()};$('commsList').append(b)});
+  if(!list.some(m=>m.id===selectedMessage)){selectedMessage=null;text('commsDetail','Select a delivery to inspect the sent observation and the recipient’s review. All deliveries are local and synchronous.')}
+ }
+ $('commsFilter').onchange=()=>{lastCommsKey='';renderComms()};
+ $('commsExport').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({mode:'local deterministic peer review; session only; not audited',messages:engineMessages},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='heartbeat-peer-messages.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
+ function frame(t){const c=peerCycles.get($('orbitSymbol').value),traffic=c&&Date.now()-c.at<3000&&!enginePaused&&marketConnected&&!motionPreference.matches;if((rotating||traffic)&&!document.hidden&&!canvas.closest('.observatory').hidden){if(lastFrame&&rotating)yaw+=Math.min(t-lastFrame,50)*.00015;draw();lastFrame=t}else lastFrame=0;requestAnimationFrame(frame)}
+ requestAnimationFrame(frame);update();
+})();
+// WORLD_MEDIA_BEGIN — editorial geography, separate from imported/unverified news.
+document.querySelectorAll('.reference-image').forEach(img=>img.addEventListener('error',()=>{img.hidden=true;const note=document.createElement('p');note.className='media-image-error';note.textContent='Image unavailable here. Open the original source below.';img.parentNode.append(note)},{once:true}));
+(()=>{
+ const regions=[
+  {name:'United States',lat:39,lon:-98,channels:['Rates','Earnings','Inflation'],records:['A1'],mechanism:'Investigate how a surprise in policy, inflation or company guidance might affect Treasury yields, financing costs and US equity valuations.',check:'Compare releases with prior expectations, then check actual yields, breadth and sector reactions. A headline alone does not determine direction.'},
+  {name:'Canada & Latin America',lat:8,lon:-76,channels:['Trade','Energy','Supply chains'],records:['A4'],mechanism:'Investigate whether trade-policy changes, commodity disruptions or cross-border production issues alter costs or demand for US companies.',check:'Separate proposed measures from enacted rules. Verify effective dates and company-specific exposure; the linked Canada record does not cover Latin America.'},
+  {name:'Europe & United Kingdom',lat:51,lon:10,channels:['Rates','Currencies','Demand'],records:['A3','A4'],mechanism:'Investigate whether monetary-policy surprises, currency changes or trade measures affect US overseas earnings and global financing conditions.',check:'Check primary policy releases and revenue geography. UK or Canada–EU headlines do not establish conditions throughout Europe.'},
+  {name:'Middle East',lat:26,lon:48,channels:['Energy','Shipping','Inflation'],records:['A2'],mechanism:'Investigate whether supply or shipping disruptions change fuel costs, delivery times and inflation expectations relevant to US businesses.',check:'Verify physical supply and shipping developments. Consider producers and energy consumers separately, and check what prices already reflect.'},
+  {name:'East Asia',lat:35,lon:120,channels:['Semiconductors','Trade','Currencies'],records:[],mechanism:'Investigate semiconductor supply, export controls, regional demand and currency shifts for possible effects on US technology and manufacturing.',check:'Verify official measures and issuer disclosures. No regional headline scan or exposure measurement is available here.'},
+  {name:'South & Southeast Asia',lat:15,lon:85,channels:['Manufacturing','Services','Shipping'],records:[],mechanism:'Investigate production continuity, service delivery and trade-route changes that could affect US supply chains or operating costs.',check:'Check which suppliers and US issuers are actually exposed. Do not generalize one country’s event across this region.'},
+  {name:'Africa',lat:0,lon:22,channels:['Critical minerals','Energy','Logistics'],records:[],mechanism:'Investigate whether specific mineral, energy or logistics developments could affect inputs used by US companies.',check:'Verify country, commodity and supplier exposure. There is no current evidence assessment for this broad region.'},
+  {name:'Oceania',lat:-25,lon:135,channels:['Commodities','Demand','Currencies'],records:[],mechanism:'Investigate commodity supply, regional demand and currency developments for potential transmission to US materials and industrial companies.',check:'Confirm the relevant commodity and company link before drawing conclusions. No current regional records are loaded.'}
+ ];
+ const canvas=$('worldCanvas'),ctx=canvas.getContext('2d');let selected=0,yaw=98*Math.PI/180,pitch=-.32,zoom=1,moving=false,drag=null,hits=[],last=0;
+ const radians=v=>v*Math.PI/180;
+ function point(lat,lon,r=1){const a=radians(lat),b=radians(lon);return [r*Math.cos(a)*Math.sin(b),-r*Math.sin(a),r*Math.cos(a)*Math.cos(b)]}
+ function project(p,w,h){const x=p[0]*Math.cos(yaw)+p[2]*Math.sin(yaw),z=-p[0]*Math.sin(yaw)+p[2]*Math.cos(yaw),y=p[1]*Math.cos(pitch)-z*Math.sin(pitch),depth=p[1]*Math.sin(pitch)+z*Math.cos(pitch),s=3.6/(3.6-depth),unit=Math.min(w*.32,h*.32)*zoom;return{x:w/2+x*unit*s,y:h/2+y*unit*s,z:depth,s}}
+ function draw(){
+  if(!ctx||canvas.closest('.media').hidden)return;const box=canvas.getBoundingClientRect(),w=box.width,h=box.height;if(!w||!h)return;
+  const dpr=Math.min(window.devicePixelRatio||1,2);if(canvas.width!==Math.round(w*dpr)||canvas.height!==Math.round(h*dpr)){canvas.width=Math.round(w*dpr);canvas.height=Math.round(h*dpr)}ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  function line(points,color,width=1){ctx.beginPath();let started=false;for(const v of points){const p=project(v,w,h);if(p.z<-.04){started=false;continue}if(started)ctx.lineTo(p.x,p.y);else ctx.moveTo(p.x,p.y);started=true}ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke()}
+  for(let lat=-60;lat<=60;lat+=20){const ps=[];for(let lon=-180;lon<=180;lon+=3)ps.push(point(lat,lon));line(ps,'#294e63')}
+  for(let lon=-180;lon<180;lon+=20){const ps=[];for(let lat=-90;lat<=90;lat+=3)ps.push(point(lat,lon));line(ps,'#294e63')}
+  const us=point(regions[0].lat,regions[0].lon);
+  if(selected!==0){const from=point(regions[selected].lat,regions[selected].lon),arc=[];for(let i=0;i<=80;i++){const t=i/80,v=from.map((x,j)=>x*(1-t)+us[j]*t),norm=Math.hypot(...v),lift=1+.18*Math.sin(t*Math.PI);arc.push(v.map(x=>x/norm*lift))}line(arc,'#edc77c',2)}
+  hits=[];regions.map((r,i)=>({...project(point(r.lat,r.lon),w,h),i})).filter(p=>p.z>=0).sort((a,b)=>a.z-b.z).forEach(p=>{const chosen=p.i===selected,color=p.i===0?'#8de7ff':chosen?'#f4d48b':'#7795ac';ctx.beginPath();ctx.arc(p.x,p.y,chosen?9:6,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();if(chosen){ctx.beginPath();ctx.arc(p.x,p.y,15,0,Math.PI*2);ctx.strokeStyle=color;ctx.stroke()}if(chosen||p.i===0){ctx.font='600 14px system-ui';ctx.textAlign='center';ctx.fillStyle='#e3edf7';ctx.fillText(p.i===0?'UNITED STATES':regions[p.i].name,p.x,p.y-22)}hits.push(p)});
+ }
+ function render(){const r=regions[selected];text('worldName',r.name);text('worldMechanism',r.mechanism);text('worldCheck',r.check);$('worldChannels').replaceChildren();r.channels.forEach(c=>{const span=document.createElement('span');span.textContent=c;$('worldChannels').append(span)});
+  const records=reviewedScan.alerts.filter(a=>r.records.includes(a.id));text('worldCoverage',records.length?records.length+' linked snapshot record'+(records.length>1?'s':''):'NOT ASSESSED · No regional records');
+  $('worldEvidence').replaceChildren();records.forEach(a=>{const link=document.createElement('a');link.href=a.url;link.target='_blank';link.rel='noopener noreferrer';link.textContent=a.source+' · '+a.title;const date=document.createElement('small');date.textContent='Publication: '+a.published;$('worldEvidence').append(link,date)});
+  const age=Math.max(0,Date.now()-Date.parse(reviewedScan.completed));text('worldAsOf',records.length?'Existing scan: '+reviewedScan.completed+' · '+(age>3600000?'STALE':'NOT LIVE')+'. No new scan performed.':'No evidence timestamp. Not a finding of low risk.');
+  [...$('worldRegions').children].forEach((b,i)=>b.setAttribute('aria-pressed',String(i===selected)));draw();
+ }
+ function motion(on){moving=on;last=0;text('worldMotion',on?'Pause globe rotation':'Start globe rotation');$('worldMotion').setAttribute('aria-pressed',String(on))}
+ function choose(i){selected=i;yaw=-radians(regions[i].lon);pitch=-radians(regions[i].lat)*.7;motion(false);render()}
+ regions.forEach((r,i)=>{const b=document.createElement('button');b.type='button';b.textContent=r.name;b.onclick=()=>choose(i);$('worldRegions').append(b)});
+ $('worldMotion').onclick=()=>motion(!moving);$('worldReset').onclick=()=>{zoom=1;$('worldZoom').value=100;choose(0)};$('worldZoom').oninput=e=>{zoom=Number(e.target.value)/100;draw()};
+ canvas.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY};motion(false);canvas.setPointerCapture(e.pointerId)});
+ canvas.addEventListener('pointermove',e=>{if(!drag)return;yaw+=(e.clientX-drag.x)*.008;pitch=Math.max(-1.2,Math.min(1.2,pitch+(e.clientY-drag.y)*.006));drag.x=e.clientX;drag.y=e.clientY;draw()});
+ canvas.addEventListener('pointerup',e=>{if(!drag)return;if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<8){const b=canvas.getBoundingClientRect(),hit=[...hits].reverse().find(p=>Math.hypot(e.clientX-b.left-p.x,e.clientY-b.top-p.y)<20);if(hit)choose(hit.i)}drag=null});canvas.addEventListener('pointercancel',()=>drag=null);
+ canvas.addEventListener('keydown',e=>{if(!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;e.preventDefault();motion(false);yaw+=e.key==='ArrowLeft'?-.12:e.key==='ArrowRight'?.12:0;pitch=Math.max(-1.2,Math.min(1.2,pitch+(e.key==='ArrowUp'?-.1:e.key==='ArrowDown'?.1:0)));draw()});
+ window.matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change',e=>{if(e.matches)motion(false)});
+ new ResizeObserver(draw).observe(canvas);setInterval(render,60000);document.querySelector('[data-view=media]').addEventListener('click',render);
+ function frame(t){if(moving&&!document.hidden&&!canvas.closest('.media').hidden){if(last)yaw+=Math.min(t-last,50)*.00013;draw();last=t}else last=0;requestAnimationFrame(frame)}requestAnimationFrame(frame);render();
+})();
+// WORLD_MEDIA_END
+// US_CHART_BEGIN — external display, never used as an engine data feed.
+(()=>{
+ let generation=0,timeout=null;
+ const descriptions={
+ 'NASDAQ:QQQ':'QQQ · Nasdaq-100 ETF, not the Nasdaq Composite index.',
+ 'AMEX:SPY':'SPY · ETF exposure to the S&P 500, not the index itself.',
+ 'AMEX:IWM':'IWM · Small-cap equity ETF.',
+ 'AMEX:GLD':'GLD · Gold trust shares, not a futures or options contract.',
+ 'NASDAQ:TLT':'TLT · Long-duration Treasury bond ETF, not an individual Treasury bond.',
+ 'NASDAQ:IEF':'IEF · Intermediate-duration Treasury bond ETF.',
+ 'AMEX:HYG':'HYG · High-yield corporate bond ETF; not equivalent to Treasury exposure.',
+ 'NASDAQ:IXIC':'Nasdaq Composite · index reference, not directly tradable; widget display may be restricted.',
+ 'NASDAQ:NDX':'Nasdaq-100 · index reference, not directly tradable; widget display may be restricted.',
+ 'SP:SPX':'S&P 500 · index reference, not directly tradable; widget display may be restricted.'};
+ function selection(){const symbol=$('chartSymbol').value;const link='https://www.tradingview.com/chart/?symbol='+encodeURIComponent(symbol);$('chartExternal').href=link;text('chartDescription',descriptions[symbol]||symbol+' · Individual equity; chart inclusion is not a recommendation.');return symbol}
+ function unload(){generation++;clearTimeout(timeout);$('chartHost').replaceChildren();$('chartHost').className='chart-empty';$('chartHost').textContent='Chart disconnected. Choose Load chart to reconnect.';text('chartStatus','DISCONNECTED · No US candle feed connected to Heartbeat engines.')}
+ function load(){const symbol=selection(),interval=$('chartInterval').value;if(![...$('chartSymbol').options].some(o=>o.value===symbol)||!['1','5','15','60','D'].includes(interval))return;
+  unload();const id=generation,frame=document.createElement('iframe');frame.className='chart-frame';frame.title='TradingView candlestick chart — delayed US market data';frame.setAttribute('referrerpolicy','no-referrer');
+  frame.setAttribute('sandbox','allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+  const config={autosize:true,symbol,interval,timezone:'America/New_York',theme:'dark',style:'1',locale:'en',allow_symbol_change:true,calendar:false,support_host:'https://www.tradingview.com'};
+  // Only fixed, allowlisted symbols and intervals enter this isolated document.
+  frame.srcdoc='<!doctype html><html><head><meta name="viewport" content="width=device-width,initial-scale=1"><style>html,body{height:100%;margin:0;background:#08131f}.tradingview-widget-container{height:100%;width:100%}.tradingview-widget-container__widget{height:calc(100% - 32px);width:100%}a{color:#9bdfff;font:13px system-ui}</style></head><body><div class="tradingview-widget-container"><div class="tradingview-widget-container__widget"></div><div class="tradingview-widget-copyright"><a href="https://www.tradingview.com/" target="_blank" rel="noopener">Charts by TradingView</a></div><script src="https://s3.tradingview.com/external-embedding/embed-widget-advanced-chart.js" async>'+JSON.stringify(config)+'<'+ '/script></div></body></html>';
+  frame.onload=()=>{if(id!==generation)return;text('chartStatus','Chart container opened · US data delayed. Price delivery and symbol availability are not verified by Heartbeat.');};
+  frame.onerror=()=>{if(id===generation)text('chartStatus','Chart failed to load. Use the TradingView link; no fallback prices are generated.')};
+  $('chartHost').className='';$('chartHost').replaceChildren(frame);text('chartStatus','Requesting external chart · '+symbol+' · delayed US data.');
+  timeout=setTimeout(()=>{if(id===generation)text('chartStatus','If candles are blank or the symbol is restricted, open the TradingView link or choose an ETF. No real-time US feed is verified here.')},15000);
+ }
+ $('chartLoad').onclick=load;$('chartUnload').onclick=unload;
+ $('chartSymbol').onchange=()=>{selection();unload()};$('chartInterval').onchange=unload;
+ window.addEventListener('pagehide',unload);selection();
+})();
+// US_CHART_END
+// LEARNING_BEGIN — educational controls never alter readiness or trading state.
+(()=>{
+ const lessons=[
+ ['Tokyo','What activity stands out?','Measures relative spot volume, buying activity and price change to flag observations worth inspecting.','Unusual activity is not proof of institutional buying or a future price move. Options flow and open-interest analytics still need contract data.'],
+ ['Palermo','Does the price structure support the idea?','Compares moving averages, volume-weighted price and recent trading ranges to organize entry research.','A trend is descriptive, not a promised entry or target. Options strikes, Greeks and expirations are not being selected by this spot engine.'],
+ ['Denver','What could make this evidence unusable?','Checks missing, stale and inconsistent data and keeps options blockers visible.','Clean data does not establish a profitable strategy. Earnings, regime and contract-specific risk checks require additional verified inputs.'],
+ ['Stockholm','What does the quote say about liquidity?','Measures bid–ask spread and displayed size at the best spot prices.','Top-of-book size is not full market depth, an executable fill guarantee or options-contract liquidity.'],
+ ['Professor','What do the observations say together?','Summarizes the rule outputs, limitations and disagreements in one place.','It does not authorize orders, establish causality or turn shared inputs into independent evidence.']
+ ];
+ function choose(i){const [name,question,role,limit]=lessons[i];text('learnAgentTitle',name+' / '+question);text('learnAgentRole',role);text('learnAgentLimit',limit);[...$('learnAgents').children].forEach((b,j)=>b.setAttribute('aria-pressed',String(i===j)))}
+ lessons.forEach((l,i)=>{const b=document.createElement('button');b.className='secondary';b.textContent=l[0];b.onclick=()=>choose(i);$('learnAgents').append(b)});choose(0);
+ document.querySelectorAll('[data-learn-go]').forEach(b=>b.onclick=()=>{const target=document.querySelector('[data-view="'+b.dataset.learnGo+'"]');target.click();target.focus();window.scrollTo({top:0,behavior:'auto'})});
+ const terms=[
+ ['Bid / ask / spread','The bid is a quoted buying price and the ask a quoted selling price. Their difference is the spread. The midpoint is not a guaranteed fill.'],
+ ['Volume / open interest','Volume counts traded units over a period. Open interest counts outstanding derivatives contracts, not the number of new bullish bets. Spot volume cannot substitute for options open interest.'],
+ ['Relative volume','Current volume divided by a comparison baseline. Matching the time interval matters; comparing a partial session with full-day history can mislead.'],
+ ['VWAP / SMA / ATR','VWAP averages price weighted by volume. SMA averages prices across a fixed window. ATR summarizes recent trading ranges; it measures movement, not direction. Heartbeat uses short rolling spot windows.'],
+ ['Call / put / strike / premium','For a purchased equity option, a call gives a right to buy and a put a right to sell at the strike. Premium is the option price. Contract terms determine quantity and settlement.'],
+ ['Expiration / DTE / 0DTE','Expiration ends the contract’s life; DTE means days to expiration. 0DTE expires that day and is disabled in the rollout. Short time horizons leave little room for an idea to work.'],
+ ['Delta / gamma / theta / vega','These estimate option-price sensitivity to the underlying price, changes in delta, passing time and implied volatility. Estimates change with market conditions; none is a forecast or a fixed daily charge.'],
+ ['Implied volatility / IV rank','IV reflects volatility implied by option prices, not direction. IV rank compares current IV with a historical range. A stock rising does not guarantee a purchased call gains value.'],
+ ['Slippage / fees','Slippage is the difference between a reference price and a fill. Fees are separate transaction charges. Paper fills must model both instead of silently assuming perfect midpoint execution.'],
+ ['P&L / expectancy / win rate','P&L is profit or loss. Win rate is the share of closed trades that win. Expectancy averages net trade outcomes; frequent small wins can be outweighed by occasional large losses. Costs must be included once.'],
+ ['Drawdown / benchmark','Drawdown is decline from a prior equity peak. A benchmark gives a predefined comparison. Higher return with much higher risk does not automatically mean a better strategy.'],
+ ['Out-of-sample / walk-forward / leakage','Lock rules using earlier observations, then test on later unseen periods. Repeat chronologically. Leakage occurs when a decision uses information unavailable at that time; overlapping outcome periods also need care.'],
+ ['Survivorship bias / concentration / market regime','Dropping failed assets biases history. Results dominated by one ticker or one environment may not generalize. Test distinct regimes and report where gains and losses come from.'],
+ ['Paper trade / shadow decision','A paper trade models execution without money. A shadow decision additionally checks a proposed order against read-only account constraints. Neither alone proves a real fill would have occurred.'],
+ ['Hard gate / kill switch / loss limit','A hard gate blocks an action despite a high score. A kill switch halts activity under specified conditions. Heartbeat’s current settings and session acknowledgement are not broker-enforced loss protection.'],
+ ['Data health / strategy readiness','Fresh complete inputs can support a data-health pass. Strategy readiness additionally requires reproducible evidence and account validation. Animation, a working chart or a hosted URL establishes neither.']
+ ];
+ function search(){const q=$('learnSearch').value.trim().toLowerCase(),matches=terms.filter(t=>t.join(' ').toLowerCase().includes(q));$('learnGlossary').replaceChildren();matches.forEach(([term,meaning])=>{const d=document.createElement('details'),s=document.createElement('summary'),p=document.createElement('p');s.textContent=term;p.textContent=meaning;d.append(s,p);$('learnGlossary').append(d)});text('learnCount',matches.length?matches.length+' topics · select one to expand.':'No matching terms. Try a shorter phrase.');}
+ $('learnSearch').oninput=search;search();
+ function payoff(){const ids=['learnStrike','learnPremium','learnSpot','learnFees'],raw=ids.map(id=>$(id).value),[strike,premium,spot,fees]=raw.map(Number);if(raw.some(x=>x.trim()==='')||![strike,premium,spot,fees].every(Number.isFinite)||strike<=0||premium<=0||spot<0||fees<0){text('learnPayoff','Enter valid amounts');text('learnMath','Strike and premium must be positive; price and fees cannot be negative.');text('learnBreakEven','');return;}const call=$('learnType').value==='call',intrinsic=Math.max(0,call?spot-strike:strike-spot),cost=premium*100+fees,net=intrinsic*100-cost,breakeven=call?strike+premium+fees/100:strike-premium-fees/100;text('learnPayoff',money(net)+' net P&L');text('learnMath','Expiration value '+money(intrinsic*100)+' − premium '+money(premium*100)+' − fees '+money(fees)+' = '+money(net)+'. Full premium-and-fee loss: '+money(cost)+'.');text('learnBreakEven',breakeven<0?'No nonnegative underlying price breaks even with these inputs.':'Expiration break-even: '+money(breakeven)+' per underlying share.');}
+ ['learnType','learnStrike','learnPremium','learnSpot','learnFees'].forEach(id=>$(id).addEventListener('input',payoff));payoff();
+})();
+// LEARNING_END
+</script>
+</body>
+</html>
